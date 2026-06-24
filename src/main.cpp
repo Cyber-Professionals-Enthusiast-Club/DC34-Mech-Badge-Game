@@ -228,6 +228,17 @@ void loop() {
       drawCockpitStatusTFT(playerMech);
     }
 
+    if (selectedMenuIndex == 1) {
+      inBattleTest = true;
+
+      drawBattleTestScreen(
+        playerMech,
+        dummyTarget,
+        battleMessage,
+        selectedWeaponIndex
+      );
+    }
+
     if (selectedMenuIndex == 2) {
       drawPilotRecordScreen(pilot);
     }
