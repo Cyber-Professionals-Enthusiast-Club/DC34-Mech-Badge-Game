@@ -7,8 +7,45 @@
 #include "MenuUI.h"
 #include "BattleTestUI.h"
 #include "OptionsUI.h"
+#include "PilotRecordUI.h"
+
+enum GameState {
+  STATE_BOOT,
+  STATE_PLAYER_BUILDER,
+  STATE_MAIN_MENU,
+  STATE_STATUS,
+  STATE_BATTLE_TEST,
+  STATE_PILOT_RECORD,
+  STATE_OPTIONS,
+  STATE_CREDITS,
+  STATE_WIN_SCREEN
+};
+
+GameState currentState = STATE_BOOT;
+
+bool inPlayerBuilder = false;
+int builderStep = 0; // 0 = name, 1 = faction
+
+String newPilotName = "ACE";
+int nameCharIndex = 0;
+int selectedFactionIndex = 0;
+
+void drawNameBuilder();
+void drawFactionBuilder();
+
+const char* FACTIONS[] = {
+  "BoomCorp LLC",
+  "MeatSlab Inc.",
+  "Reptile Sports Formula",
+  "Happy Sushi LTD.",
+  "Yuri's Consumables Inc",
+  "SmoCorp Industrial Concern"
+};
+
+const int FACTION_COUNT = 6;
 
 bool inOptionsMenu = false;
+bool inCreditsScreen = false;
 int selectedOptionsIndex = 0;
 
 bool matchWon = false;
@@ -39,221 +76,132 @@ void drawWinScreen(const String &reason) {
   tft.println("Press B for Main Menu");
 }
 
-void setup() {
-  Serial.begin(115200);
-  delay(1500);
-
-  randomSeed(esp_random());
-
-  Serial.println("=== CPEC MECHFIGHTERS ===");
-
-  if (!LittleFS.begin(true)) {
-    Serial.println("LittleFS mount failed");
-    return;
-  }
-
   PilotProfile pilot;
-  BadgeConfig badge;
-  std::vector<ChassisProfile> chassisProfiles;
-  std::vector<WeaponProfile> weaponProfiles;
 
-  initDummyTarget(dummyTarget);
+void changeState(GameState newState);
 
-  if (!loadPilotProfile(pilot)) {
-    Serial.println("Pilot load failed");
-    return;
+void changeState(GameState newState) {
+  currentState = newState;
+
+  switch (currentState) {
+    case STATE_MAIN_MENU:
+      drawMainMenu(selectedMenuIndex);
+      break;
+
+    case STATE_STATUS:
+      drawCockpitStatusTFT(playerMech);
+      break;
+
+    case STATE_BATTLE_TEST:
+      drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
+      break;
+
+    case STATE_PILOT_RECORD:
+      drawPilotRecordScreen(pilot);
+      break;
+
+    case STATE_OPTIONS:
+      drawOptionsMenu(selectedOptionsIndex);
+      break;
+
+    case STATE_CREDITS:
+      drawCreditsScreen();
+      break;
+
+    case STATE_WIN_SCREEN:
+      drawWinScreen(dummyTarget.destroyedReason);
+      break;
+
+    case STATE_PLAYER_BUILDER:
+      builderStep = 0;
+      drawNameBuilder();
+      break;
+
+    default:
+      break;
   }
-
-  if (!loadBadgeConfig(badge)) {
-    Serial.println("Badge load failed");
-    return;
-  }
-
-  if (!loadChassisProfiles(chassisProfiles)) {
-    Serial.println("Chassis profiles failed");
-    return;
-  }
-
-  if (!loadWeaponProfiles(weaponProfiles)) {
-    Serial.println("Weapon profiles failed");
-    return;
-  }
-
-  const ChassisProfile *activeChassis =
-      findChassisById(chassisProfiles, badge.chassisId);
-
-  if (!activeChassis) {
-    Serial.print("No chassis found for ID: ");
-    Serial.println(badge.chassisId);
-    return;
-  }
-
-if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
-  Serial.println("ActiveMech build failed");
-  return;
 }
 
-  if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
-    Serial.println("ActiveMech build failed");
-    return;
+void setup() {
+    Serial.begin(115200);
+    delay(3000);
+
+  badgeSetup();
+
+drawMainMenu(selectedMenuIndex);
+}
+
+void drawNameBuilder() {
+  tft.fillScreen(ST77XX_BLACK);
+
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.setCursor(20, 20);
+  tft.println("NEW PILOT");
+
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setCursor(20, 80);
+  tft.print("CALLSIGN: ");
+  tft.println(newPilotName);
+
+  tft.setTextSize(1);
+  tft.setCursor(20, 200);
+  tft.println("UP/DOWN CHANGE  A=NEXT");
+}
+
+
+void drawFactionBuilder() {
+  tft.fillScreen(ST77XX_BLACK);
+
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.setCursor(20, 15);
+  tft.println("SELECT FACTION");
+
+  tft.setTextSize(1);
+
+  for (int i = 0; i < FACTION_COUNT; i++) {
+    int y = 50 + (i * 22);
+
+    tft.setCursor(20, y);
+
+    if (i == selectedFactionIndex) {
+      tft.setTextColor(ST77XX_YELLOW);
+      tft.print("> ");
+    } else {
+      tft.setTextColor(ST77XX_GREEN);
+      tft.print("  ");
+    }
+
+    tft.println(FACTIONS[i]);
   }
 
-  Serial.print("Pilot: ");
-  Serial.println(pilot.pilotName);
-
-  Serial.print("Badge: ");
-  Serial.println(badge.badgeId);
-
-  Serial.print("Mech: ");
-  Serial.println(activeChassis->displayName);
-
-
-  Serial.println("Calling badgeSetup()");
-  badgeSetup();
-  Serial.println("Returned from badgeSetup()");
-
-  // printActiveMech(playerMech);
-  // drawCockpitStatusSerial(playerMech);
-  // drawCockpitStatusTFT(playerMech);
-  drawMainMenu(0);
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setCursor(20, 220);
+  tft.println("A=CONFIRM  B=BACK");
 }
 
 void loop() {
-if (matchWon) {
-  if (digitalRead(BTN_B) == LOW) {
-    matchWon = false;
-    inBattleTest = false;
-
-    battleMessage = "Awaiting command...";
-    selectedWeaponIndex = 0;
-
-    // Rebuild/reset the dummy mech
-    initDummyTarget(dummyTarget);
-
-    // Reset player battle state too
-    playerMech.currentHeat = 0;
-    playerMech.shutdown = false;
-    playerMech.shutdownTurnsRemaining = 0;
-
-    // Refill ammo
-    for (ActiveWeapon &weapon : playerMech.weapons) {
-      if (weapon.maxAmmo >= 0) {
-        weapon.currentAmmo = weapon.maxAmmo;
-      }
+  if (inCreditsScreen) {
+    if (digitalRead(BTN_B) == LOW) {
+      inCreditsScreen = false;
+      drawOptionsMenu(selectedOptionsIndex);
+      delay(180);
     }
-
-    drawMainMenu(selectedMenuIndex);
-    delay(180);
-  }
-
-  return;
-}
-if (inOptionsMenu) {
-  if (digitalRead(BTN_A) == LOW) {
-    drawCreditsScreen();
-    delay(180);
-  }
-
-  if (digitalRead(BTN_B) == LOW) {
-    inOptionsMenu = false;
-    drawMainMenu(selectedMenuIndex);
-    delay(180);
-  }
-
-  return;
-}
-  if (inBattleTest) {
-if (digitalRead(BTN_UP) == LOW) {
-
-  int battleOptionCount =
-      playerMech.weapons.size() + 1;
-
-  selectedWeaponIndex--;
-
-  if (selectedWeaponIndex < 0) {
-    selectedWeaponIndex =
-      battleOptionCount - 1;
-  }
-
-  drawBattleTestScreen(
-      playerMech,
-      dummyTarget,
-      battleMessage,
-      selectedWeaponIndex);
-
-  delay(180);
-}
-if (digitalRead(BTN_DOWN) == LOW) {
-
-  int battleOptionCount =
-      playerMech.weapons.size() + 1;
-
-  selectedWeaponIndex++;
-
-  if (selectedWeaponIndex >= battleOptionCount) {
-    selectedWeaponIndex = 0;
-  }
-
-  drawBattleTestScreen(
-      playerMech,
-      dummyTarget,
-      battleMessage,
-      selectedWeaponIndex);
-
-  delay(180);
-}
-
-if (digitalRead(BTN_A) == LOW) {
-
-  if (playerMech.shutdown &&
-      selectedWeaponIndex != 0) {
-
-    battleMessage = "SHUTDOWN - HOLD FIRE";
-
-    drawBattleTestScreen(
-      playerMech,
-      dummyTarget,
-      battleMessage,
-      selectedWeaponIndex
-    );
-
-    delay(180);
     return;
   }
 
-  if (selectedWeaponIndex == 0) {
-    holdFire(playerMech, battleMessage);
-  } else {
-
-    int realWeaponIndex = selectedWeaponIndex - 1;
-
-    attackDummyMech(
-      playerMech,
-      dummyTarget,
-      battleMessage,
-      realWeaponIndex
-    );
-    if (dummyTarget.destroyed) {
-      matchWon = true;
-      inBattleTest = false;
-      drawWinScreen(dummyTarget.destroyedReason);
+  if (inOptionsMenu) {
+    if (digitalRead(BTN_A) == LOW) {
+      if (selectedOptionsIndex == 0) {
+        inCreditsScreen = true;
+        drawCreditsScreen();
+      }
       delay(180);
-      return;
-  }
-  }
-
-  drawBattleTestScreen(
-    playerMech,
-    dummyTarget,
-    battleMessage,
-    selectedWeaponIndex
-  );
-
-  delay(180);
-}
+    }
 
     if (digitalRead(BTN_B) == LOW) {
-      inBattleTest = false;
+      inOptionsMenu = false;
       drawMainMenu(selectedMenuIndex);
       delay(180);
     }
@@ -263,14 +211,14 @@ if (digitalRead(BTN_A) == LOW) {
 
   if (digitalRead(BTN_UP) == LOW) {
     selectedMenuIndex--;
-    if (selectedMenuIndex < 0) selectedMenuIndex = 2;
+    if (selectedMenuIndex < 0) selectedMenuIndex = 3;
     drawMainMenu(selectedMenuIndex);
     delay(180);
   }
 
   if (digitalRead(BTN_DOWN) == LOW) {
     selectedMenuIndex++;
-    if (selectedMenuIndex > 2) selectedMenuIndex = 0;
+    if (selectedMenuIndex > 3) selectedMenuIndex = 0;
     drawMainMenu(selectedMenuIndex);
     delay(180);
   }
@@ -280,22 +228,16 @@ if (digitalRead(BTN_A) == LOW) {
       drawCockpitStatusTFT(playerMech);
     }
 
-    if (selectedMenuIndex == 1) {
-      inBattleTest = true;
-      drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
+    if (selectedMenuIndex == 2) {
+      drawPilotRecordScreen(pilot);
     }
 
-    if (selectedMenuIndex == 2) {
+    if (selectedMenuIndex == 3) {
       inOptionsMenu = true;
       selectedOptionsIndex = 0;
       drawOptionsMenu(selectedOptionsIndex);
     }
 
-    delay(180);
-  }
-
-  if (digitalRead(BTN_B) == LOW) {
-    drawMainMenu(selectedMenuIndex);
     delay(180);
   }
 }
