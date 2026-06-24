@@ -1,0 +1,5 @@
+{
+  "badge_id": "CPEC-PTH-001",
+  "chassis": "PATHFINDER",
+  "salt": "unique-secret-here"
+}

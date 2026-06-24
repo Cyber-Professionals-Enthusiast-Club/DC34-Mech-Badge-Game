@@ -1,0 +1,99 @@
+{
+  "chassis": [
+    {
+      "id": "PEST",
+      "display_name": "Pest",
+      "class": "Light",
+      "locations": {
+        "HEAD": { "armor": 2, "structure": 1 },
+        "CT": { "armor": 4, "structure": 2 },
+        "LT": { "armor": 3, "structure": 1 },
+        "RT": { "armor": 3, "structure": 1 },
+        "LA": { "armor": 2, "structure": 1 },
+        "RA": { "armor": 2, "structure": 1 },
+        "LL": { "armor": 3, "structure": 1 },
+        "RL": { "armor": 3, "structure": 1 }
+      },
+      "initiative": 4,
+      "mobility": 3,
+      "heat_capacity": 8,
+      "sao_slots": 2,
+      "base_loadout": [
+        { "slot": 1, "base_weapon": "TWIN_MACHINE_GUN" },
+        { "slot": 2, "base_weapon": "TWIN_MACHINE_GUN" }
+      ]
+    },
+    {
+      "id": "CREEPER",
+      "display_name": "Creeper",
+      "class": "Medium",
+      "locations": {
+        "HEAD": { "armor": 3, "structure": 1 },
+        "CT": { "armor": 6, "structure": 3 },
+        "LT": { "armor": 4, "structure": 2 },
+        "RT": { "armor": 4, "structure": 2 },
+        "LA": { "armor": 3, "structure": 1 },
+        "RA": { "armor": 3, "structure": 1 },
+        "LL": { "armor": 4, "structure": 2 },
+        "RL": { "armor": 4, "structure": 2 }
+      },
+      "initiative": 2,
+      "mobility": 1,
+      "heat_capacity": 7,
+      "sao_slots": 2,
+      "base_loadout": [
+        { "slot": 1, "base_weapon": "TWIN_MACHINE_GUN" },
+        { "slot": 2, "base_weapon": "LASER" }
+      ]
+    },
+    {
+      "id": "PATHFINDER",
+      "display_name": "Pathfinder",
+      "class": "Heavy",
+      "locations": {
+        "HEAD": { "armor": 3, "structure": 1 },
+        "CT": { "armor": 8, "structure": 4 },
+        "LT": { "armor": 6, "structure": 3 },
+        "RT": { "armor": 6, "structure": 3 },
+        "LA": { "armor": 4, "structure": 2 },
+        "RA": { "armor": 4, "structure": 2 },
+        "LL": { "armor": 5, "structure": 2 },
+        "RL": { "armor": 5, "structure": 2 }
+      },
+      "initiative": 0,
+      "mobility": 0,
+      "heat_capacity": 9,
+      "sao_slots": 3,
+      "base_loadout": [
+        { "slot": 1, "base_weapon": "LASER" },
+        { "slot": 2, "base_weapon": "LASER" },
+        { "slot": 3, "base_weapon": "MISSILE_LAUNCHER_5" }
+      ]
+    },
+    {
+      "id": "DOZER",
+      "display_name": "Dozer",
+      "class": "Assault",
+      "locations": {
+        "HEAD": { "armor": 4, "structure": 2 },
+        "CT": { "armor": 10, "structure": 5 },
+        "LT": { "armor": 8, "structure": 4 },
+        "RT": { "armor": 8, "structure": 4 },
+        "LA": { "armor": 6, "structure": 3 },
+        "RA": { "armor": 6, "structure": 3 },
+        "LL": { "armor": 7, "structure": 3 },
+        "RL": { "armor": 7, "structure": 3 }
+      },
+      "initiative": -2,
+      "mobility": -2,
+      "heat_capacity": 7,
+      "sao_slots": 4,
+      "base_loadout": [
+        { "slot": 1, "base_weapon": "LASER" },
+        { "slot": 2, "base_weapon": "LASER" },
+        { "slot": 3, "base_weapon": "MISSILE_LAUNCHER_5" },
+        { "slot": 4, "base_weapon": "AUTOCANNON" }
+      ]
+    }
+  ]
+}

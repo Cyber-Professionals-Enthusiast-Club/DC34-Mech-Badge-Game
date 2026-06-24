@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "profile_type": "faction_profiles",
+  "factions": [
+    {
+      "id": "BOOMCORP",
+      "display_name": "BoomCorp LLC",
+      "description": "Weapons development, munitions, and explosive engineering."
+    },
+    {
+      "id": "MEATSLAB",
+      "display_name": "MeatSlab Inc.",
+      "description": "Soda/Pop/Cola Wars and Sports Drinks. Dark Matter"
+    },
+    {
+      "id": "REPTILE_SPORTS",
+      "display_name": "Reptile Sports Formula",
+      "description": "Now with 25% less protein chunks!"
+    },
+    {
+      "id": "HAPPY_SUSHI",
+      "display_name": "Happy Sushi LTD.",
+      "description": "The Qleeborp Roll is to die for."
+    },
+    {
+      "id": "YURIS_CONSUMABLES",
+      "display_name": "Yuri's Consumables Inc",
+      "description": "Maker of Yuri's Potato Drink. Like Babushka used to make."
+    },
+    {
+      "id": "SMOCORP",
+      "display_name": "SmoCorp Industrial Concern",
+      "description": "Marlboro bought out Energizer and kept going and going and going"
+    }
+  ]
+}

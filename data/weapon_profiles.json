@@ -1,0 +1,81 @@
+{
+  "schema_version": 3,
+  "game": "CPEC BattleMech Badge",
+  "profile_type": "weapon_profiles",
+  "weapons": [
+    {
+      "id": "TWIN_MACHINE_GUN",
+      "display_name": "Twin Machine Gun",
+      "category": "ballistic",
+      "source": "base",
+      "damage": 5,
+      "heat": 0,
+      "accuracy_modifier": 1,
+      "range": "short",
+      "ammo": 6
+    },
+    {
+      "id": "LASER",
+      "display_name": "Laser",
+      "category": "energy",
+      "source": "base",
+      "damage": 7,
+      "heat": 2,
+      "accuracy_modifier": 0,
+      "range": "medium"
+    },
+    {
+      "id": "MISSILE_LAUNCHER_5",
+      "display_name": "Missile Launcher 5",
+      "category": "missile",
+      "damage": 8,
+      "heat": 1,
+      "accuracy_modifier": -1,
+      "range": "long",
+      "ammo": 6
+    },
+    {
+      "id": "AUTOCANNON",
+      "display_name": "Autocannon",
+      "category": "ballistic",
+      "source": "base",
+      "damage": 10,
+      "heat": 0,
+      "accuracy_modifier": 1,
+      "range": "medium",
+      "ammo": 6
+    },
+    {
+      "id": "PULSE_LASER",
+      "display_name": "Pulse Laser",
+      "category": "energy",
+      "source": "sao",
+      "damage": 10,
+      "heat": 3,
+      "accuracy_modifier": 1,
+      "range": "medium"
+    },
+    {
+      "id": "SCREAMER_MISSILES",
+      "display_name": "Screamer Missiles",
+      "category": "missile",
+      "source": "sao",
+      "damage": 12,
+      "heat": 2,
+      "accuracy_modifier": -1,
+      "range": "long",
+      "ammo": 6
+    },
+    {
+      "id": "HEAVY_CHAINGUN",
+      "display_name": "Heavy Chaingun",
+      "category": "ballistic",
+      "source": "sao",
+      "damage": 9,
+      "heat": 0,
+      "accuracy_modifier": 1,
+      "range": "medium",
+      "ammo": 6
+    }
+  ]
+}
