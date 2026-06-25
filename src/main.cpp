@@ -9,19 +9,32 @@
 #include "OptionsUI.h"
 #include "PilotRecordUI.h"
 
-bool inOptionsMenu = false;
+enum GameState {
+  STATE_MAIN_MENU,
+  STATE_STATUS,
+  STATE_BATTLE_TEST,
+  STATE_PILOT_RECORD,
+  STATE_OPTIONS,
+  STATE_CREDITS
+};
+
+GameState currentState = STATE_MAIN_MENU;
+PilotProfile pilot;
+ActiveMech playerMech;
+DummyMechTarget dummyTarget;
+
+int selectedMenuIndex = 0;
+int selectedWeaponIndex = 0;
 int selectedOptionsIndex = 0;
+
+bool inBattleTest = false;
+bool inOptionsMenu = false;
 
 bool matchWon = false;
 
-ActiveMech playerMech;
-int selectedMenuIndex = 0;
-int selectedWeaponIndex = 0;
-
-DummyMechTarget dummyTarget;
 String battleMessage = "Awaiting command...";
-bool inBattleTest = false;
 
+//============DRAW WIN SCREEN
 void drawWinScreen(const String &reason) {
   tft.fillScreen(ST77XX_BLACK);
 
@@ -39,9 +52,7 @@ void drawWinScreen(const String &reason) {
   tft.setCursor(55, 160);
   tft.println("Press B for Main Menu");
 }
-
-PilotProfile pilot;
-
+//============SETUP()
 void setup() {
   Serial.begin(115200);
   delay(1500);
@@ -119,7 +130,7 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
   // drawCockpitStatusTFT(playerMech);
   drawMainMenu(0);
 }
-
+//===========LOOP()
 void loop() {
 if (matchWon) {
   if (digitalRead(BTN_B) == LOW) {
