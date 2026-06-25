@@ -60,7 +60,6 @@ struct FactionProfile {
   String description;
 };
 
-
 bool mountBadgeFilesystem();
 bool loadPilotProfile(PilotProfile &pilot);
 bool savePilotProfile(const PilotProfile &pilot);
@@ -68,7 +67,6 @@ bool loadBadgeConfig(BadgeConfig &badge);
 bool loadChassisProfiles(std::vector<ChassisProfile> &chassisList);
 bool loadWeaponProfiles(std::vector<WeaponProfile> &weaponList);
 bool loadFactionProfiles(std::vector<FactionProfile> &factionList);
-bool savePilotProfile(const PilotProfile &pilot);
 
 const ChassisProfile* findChassisById(const std::vector<ChassisProfile> &list, const String &id);
 const WeaponProfile* findWeaponById(const std::vector<WeaponProfile> &list, const String &id);
