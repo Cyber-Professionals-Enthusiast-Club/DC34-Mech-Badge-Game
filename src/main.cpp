@@ -52,11 +52,11 @@ void drawWinScreen(const String &reason) {
   tft.println("Press B for Main Menu");
 }
 
-//FUNCTION PROTOTYPES
+//========FUNCTION PROTOTYPES
 void handleMainMenu();
 void handleOptionsMenu();
 void handleCreditsScreen();
-
+void handleBattleTest();
 
 //============SETUP()
 void setup() {
@@ -118,6 +118,16 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
 
 //===========LOOP()
 void loop() {
+  // keep existing matchWon handler here for now
+  if (matchWon) {
+  return;
+  }
+
+  if (inBattleTest) {
+    handleBattleTest();
+    return;
+  }
+
   if (inCreditsScreen) {
     handleCreditsScreen();
     return;
@@ -130,6 +140,15 @@ void loop() {
 
   handleMainMenu();
 }
+
+void handleBattleTest() {
+  if (digitalRead(BTN_B) == LOW) {
+    inBattleTest = false;
+    drawMainMenu(selectedMenuIndex);
+    delay(180);
+  }
+}
+
 void handleCreditsScreen() {
   if (digitalRead(BTN_B) == LOW) {
     inCreditsScreen = false;
