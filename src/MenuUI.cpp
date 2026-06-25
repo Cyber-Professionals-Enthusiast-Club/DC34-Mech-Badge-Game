@@ -2,12 +2,13 @@
 #include "CPEC_BattleMech_TextPort.h"
 
 static const char* MENU_ITEMS[] = {
-  "STATUS",
+  "MECH STATUS",
   "BATTLE TEST",
+  "PILOT RECORD",
   "OPTIONS"
 };
 
-static const int MENU_COUNT = 3;
+static const int MENU_COUNT = 4;
 
 void drawMainMenu(int selectedIndex) {
   tft.fillScreen(ST77XX_BLACK);

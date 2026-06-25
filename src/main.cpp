@@ -7,6 +7,7 @@
 #include "MenuUI.h"
 #include "BattleTestUI.h"
 #include "OptionsUI.h"
+#include "PilotRecordUI.h"
 
 bool inOptionsMenu = false;
 int selectedOptionsIndex = 0;
@@ -39,6 +40,8 @@ void drawWinScreen(const String &reason) {
   tft.println("Press B for Main Menu");
 }
 
+PilotProfile pilot;
+
 void setup() {
   Serial.begin(115200);
   delay(1500);
@@ -52,7 +55,6 @@ void setup() {
     return;
   }
 
-  PilotProfile pilot;
   BadgeConfig badge;
   std::vector<ChassisProfile> chassisProfiles;
   std::vector<WeaponProfile> weaponProfiles;
@@ -148,20 +150,9 @@ if (matchWon) {
 
   return;
 }
-if (inOptionsMenu) {
-  if (digitalRead(BTN_A) == LOW) {
-    drawCreditsScreen();
-    delay(180);
-  }
 
-  if (digitalRead(BTN_B) == LOW) {
-    inOptionsMenu = false;
-    drawMainMenu(selectedMenuIndex);
-    delay(180);
-  }
 
-  return;
-}
+//BATTLE MENU CONTROLS
   if (inBattleTest) {
 if (digitalRead(BTN_UP) == LOW) {
 
@@ -261,6 +252,22 @@ if (digitalRead(BTN_A) == LOW) {
     return;
   }
 
+  //OPTIONS MENU
+if (inOptionsMenu) {
+  if (digitalRead(BTN_A) == LOW) {
+    drawCreditsScreen();
+    delay(180);
+  }
+
+  if (digitalRead(BTN_B) == LOW) {
+    inOptionsMenu = false;
+    drawMainMenu(selectedMenuIndex);
+    delay(180);
+  }
+
+  return;
+}
+//MAIN MENU CONTROLS
   if (digitalRead(BTN_UP) == LOW) {
     selectedMenuIndex--;
     if (selectedMenuIndex < 0) selectedMenuIndex = 2;
@@ -270,7 +277,7 @@ if (digitalRead(BTN_A) == LOW) {
 
   if (digitalRead(BTN_DOWN) == LOW) {
     selectedMenuIndex++;
-    if (selectedMenuIndex > 2) selectedMenuIndex = 0;
+    if (selectedMenuIndex > 3) selectedMenuIndex = 0;
     drawMainMenu(selectedMenuIndex);
     delay(180);
   }
@@ -286,6 +293,10 @@ if (digitalRead(BTN_A) == LOW) {
     }
 
     if (selectedMenuIndex == 2) {
+      drawPilotRecordScreen(pilot);
+    }
+
+    if (selectedMenuIndex == 3) {
       inOptionsMenu = true;
       selectedOptionsIndex = 0;
       drawOptionsMenu(selectedOptionsIndex);
