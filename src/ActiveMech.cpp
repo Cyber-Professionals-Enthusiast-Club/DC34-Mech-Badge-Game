@@ -7,10 +7,7 @@ bool buildActiveMech(
   const ChassisProfile *chassis,
   const std::vector<WeaponProfile> &weaponProfiles
 ) {
-  if (!chassis) {
-    Serial.println("buildActiveMech failed: chassis is null.");
-    return false;
-  }
+
 
   mech.pilot = pilot;
   mech.badge = badge;
@@ -35,13 +32,6 @@ bool buildActiveMech(
     const WeaponProfile *weapon =
         findWeaponById(weaponProfiles, slot.baseWeaponId);
 
-    if (!weapon) {
-      Serial.print("Missing weapon profile for slot ");
-      Serial.print(slot.slot);
-      Serial.print(": ");
-      Serial.println(slot.baseWeaponId);
-      continue;
-    }
 
     ActiveWeapon activeWeapon;
     activeWeapon.slot = slot.slot;
@@ -52,14 +42,14 @@ bool buildActiveMech(
     activeWeapon.currentAmmo = -1;
 
    if (weapon->category == "missile") {
-  activeWeapon.maxAmmo = 6;
-  activeWeapon.currentAmmo = 6;
+    activeWeapon.maxAmmo = 6;
+    activeWeapon.currentAmmo = 6;
 }
 
-if (weapon->category == "ballistic") {
-  activeWeapon.maxAmmo = 5;
-  activeWeapon.currentAmmo = 5;
-}
+    if (weapon->category == "ballistic") {
+      activeWeapon.maxAmmo = 5;
+      activeWeapon.currentAmmo = 5;
+  }
 
 mech.weapons.push_back(activeWeapon);
   }

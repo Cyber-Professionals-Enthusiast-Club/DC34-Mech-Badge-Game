@@ -109,6 +109,13 @@ bool loadBadgeConfig(BadgeConfig &badge) {
     return false;
   }
 
+  Serial.print("Badge loaded: ");
+  Serial.println(badge.badgeId);
+
+  Serial.print("Chassis ID loaded: [");
+  Serial.print(badge.chassisId);
+  Serial.println("]");
+
   badge.schemaVersion = doc["schema_version"] | 1;
   badge.badgeId = doc["badge_id"] | "";
   badge.chassisId = doc["chassis"] | "";
