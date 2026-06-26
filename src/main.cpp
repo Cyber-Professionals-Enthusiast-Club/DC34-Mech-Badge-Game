@@ -58,6 +58,15 @@ void handleOptionsMenu();
 void handleCreditsScreen();
 void handleBattleTest();
 
+//------Helpers
+void returnToMainMenu() {
+  inBattleTest = false;
+  inOptionsMenu = false;
+  inCreditsScreen = false;
+  matchWon = false;
+  currentState = STATE_MAIN_MENU;
+  drawMainMenu(selectedMenuIndex);
+}
 //============SETUP()
 void setup() {
   Serial.begin(115200);
@@ -109,10 +118,8 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
   Serial.println("ActiveMech build failed");
   return;
 }
-  Serial.println("Calling badgeSetup()");
   badgeSetup();
-  Serial.println("Returned from badgeSetup()");
-  drawMainMenu(0);
+  drawMainMenu(selectedMenuIndex);
 }
 
 
@@ -169,8 +176,7 @@ void handleOptionsMenu() {
 
   if (digitalRead(BTN_B) == LOW) {
     inOptionsMenu = false;
-    currentState = STATE_MAIN_MENU;
-    drawMainMenu(selectedMenuIndex);
+    returnToMainMenu();
     delay(180);
   }
 }
@@ -217,8 +223,7 @@ void handleMainMenu() {
   }
 
   if (digitalRead(BTN_B) == LOW) {
-    currentState = STATE_MAIN_MENU;
-    drawMainMenu(selectedMenuIndex);
+    returnToMainMenu();
     delay(180);
   }
 }
