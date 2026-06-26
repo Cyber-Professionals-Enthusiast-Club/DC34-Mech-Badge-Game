@@ -827,8 +827,6 @@ void badgeSetup() {
   Serial.begin(115200);
   delay(1500);
 
-  Serial.println("HW SPI TFT TEST");
-
   pinMode(TFT_BL, OUTPUT);
   digitalWrite(TFT_BL, HIGH);
 
