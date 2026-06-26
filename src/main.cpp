@@ -57,6 +57,7 @@ void handleMainMenu();
 void handleOptionsMenu();
 void handleCreditsScreen();
 void handleBattleTest();
+void returnToMainMenu();
 
 //------Helpers
 void returnToMainMenu() {
@@ -148,10 +149,20 @@ void loop() {
   handleMainMenu();
 }
 
+void returnToMainMenu() {
+  inBattleTest = false;
+  inOptionsMenu = false;
+  inCreditsScreen = false;
+  matchWon = false;
+
+  currentState = STATE_MAIN_MENU;
+
+  drawMainMenu(selectedMenuIndex);
+}
+
 void handleBattleTest() {
   if (digitalRead(BTN_B) == LOW) {
-    inBattleTest = false;
-    drawMainMenu(selectedMenuIndex);
+    returnToMainMenu();
     delay(180);
   }
 }
@@ -174,10 +185,9 @@ void handleOptionsMenu() {
     delay(180);
   }
 
-  if (digitalRead(BTN_B) == LOW) {
-    inOptionsMenu = false;
-    returnToMainMenu();
-    delay(180);
+if (digitalRead(BTN_B) == LOW) {
+  returnToMainMenu();
+  delay(180);
   }
 }
 void handleMainMenu() {
