@@ -8,19 +8,11 @@
 #include "BattleTestUI.h"
 #include "OptionsUI.h"
 #include "PilotRecordUI.h"
+#include "PlayerBuilderUI.h"
+#include "GameState.h"
 
 //ENUMS
-enum GameState {
-  STATE_MAIN_MENU,
-  STATE_STATUS,
-  STATE_BATTLE_TEST,
-  STATE_PILOT_RECORD,
-  STATE_OPTIONS,
-  STATE_CREDITS,
-  STATE_WIN_SCREEN,
-  STATE_PLAYER_NAME,
-  STATE_PLAYER_FACTION,
-};
+
 
 //GLOBALS
 GameState currentState = STATE_MAIN_MENU;
@@ -30,7 +22,7 @@ DummyMechTarget dummyTarget;
 
 String newPilotName = "ACE";
 int selectedNameChar = 0;
-int selectedFactionIndex = 0;
+
 
 const char* FACTIONS[] = {
   "BoomCorp LLC",
@@ -51,6 +43,10 @@ int selectedOptionsIndex = 0;
 // bool inOptionsMenu = false;
 // bool inCreditsScreen = false;
 bool matchWon = false;
+
+char nameBuffer[9] = "AAAAAAAA";
+int nameCursor;
+int selectedFactionIndex;
 
 String battleMessage = "Awaiting command...";
 
@@ -79,8 +75,6 @@ void returnToMainMenu();
 void handleWinScreen();
 void handleStatusScreen();
 void handlePilotRecordScreen();
-void drawPlayerNameScreen();
-void drawPlayerFactionScreen();
 void handlePlayerNameScreen();
 void handlePlayerFactionScreen();
 
@@ -394,48 +388,68 @@ void handleMainMenu() {
   
 }
 
-void drawPlayerNameScreen() {
-  tft.fillScreen(ST77XX_BLACK);
-  tft.setTextColor(ST77XX_YELLOW);
-  tft.setTextSize(2);
-  tft.setCursor(20, 20);
-  tft.println("NEW PILOT");
-
-  tft.setTextColor(ST77XX_GREEN);
-  tft.setCursor(20, 80);
-  tft.print("CALLSIGN: ");
-  tft.println(newPilotName);
-
-  tft.setTextSize(1);
-  tft.setCursor(20, 205);
-  tft.println("UP=ADD A  DOWN=DELETE");
-  tft.setCursor(20, 220);
-  tft.println("A=NEXT");
-}
-
 void handlePlayerNameScreen() {
-  if (digitalRead(BTN_UP) == LOW) {
-    if (newPilotName.length() < 10) {
-      newPilotName += "A";
+    if (digitalRead(BTN_UP) == LOW) {
+      if (nameBuffer[nameCursor] < 'A' || nameBuffer[nameCursor] > 'Z') {
+        nameBuffer[nameCursor] = 'A';
+      } else {
+        nameBuffer[nameCursor]++;
+
+        if (nameBuffer[nameCursor] > 'Z') {
+          nameBuffer[nameCursor] = 'A';
+        }
+      }
+
+      drawPlayerNameScreen();
+      delay(180);
     }
+
+    if (digitalRead(BTN_DOWN) == LOW) {
+      if (nameBuffer[nameCursor] < 'A' || nameBuffer[nameCursor] > 'Z') {
+        nameBuffer[nameCursor] = 'Z';
+      } else {
+        nameBuffer[nameCursor]--;
+
+        if (nameBuffer[nameCursor] < 'A') {
+          nameBuffer[nameCursor] = 'Z';
+        }
+      }
+
+      drawPlayerNameScreen();
+      delay(180);
+    }
+
+  if (digitalRead(BTN_LEFT) == LOW) {
+    nameCursor--;
+
+    if (nameCursor < 0) {
+      nameCursor = 7;
+    }
+
     drawPlayerNameScreen();
     delay(180);
   }
 
-  if (digitalRead(BTN_DOWN) == LOW) {
-    if (newPilotName.length() > 0) {
-      newPilotName.remove(newPilotName.length() - 1);
+  if (digitalRead(BTN_RIGHT) == LOW) {
+    nameCursor++;
+
+    if (nameCursor > 7) {
+      nameCursor = 0;
     }
+
     drawPlayerNameScreen();
     delay(180);
   }
 
   if (digitalRead(BTN_A) == LOW) {
+    newPilotName = String(nameBuffer);
+
     currentState = STATE_PLAYER_FACTION;
     drawPlayerFactionScreen();
     delay(180);
   }
 }
+
 void drawPlayerFactionScreen() {
   tft.fillScreen(ST77XX_BLACK);
   tft.setTextColor(ST77XX_YELLOW);
