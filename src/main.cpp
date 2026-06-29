@@ -131,22 +131,32 @@ void loop() {
   return;
   }
 
-  if (currentState == STATE_BATTLE_TEST) {
-    handleBattleTest();
-    return;
-  }
+   switch (currentState) {
 
-  if (currentState == STATE_CREDITS) {
-    handleCreditsScreen();
-    return;
-  }
+    case STATE_MAIN_MENU:
+      handleMainMenu();
+      break;
 
-  if (currentState == STATE_OPTIONS) {
-    handleOptionsMenu();
-    return;
-  }
+    case STATE_BATTLE_TEST:
+      handleBattleTest();
+      break;
 
-  handleMainMenu();
+    case STATE_OPTIONS:
+      handleOptionsMenu();
+      break;
+
+    case STATE_CREDITS:
+      handleCreditsScreen();
+      break;
+
+    case STATE_STATUS:
+      // We'll build this next
+      break;
+
+    case STATE_PILOT_RECORD:
+      // We'll build this next
+      break;
+  }
 }
 
 void handleBattleTest() {
