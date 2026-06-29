@@ -30,7 +30,7 @@ int selectedWeaponIndex = 0;
 int selectedOptionsIndex = 0;
 
 // bool inBattleTest = false;
-bool inOptionsMenu = false;
+// bool inOptionsMenu = false;
 bool inCreditsScreen = false;
 bool matchWon = false;
 
@@ -62,7 +62,7 @@ void returnToMainMenu();
 //------Helpers
 void returnToMainMenu() {
   //inBattleTest = false;
-  inOptionsMenu = false;
+  //inOptionsMenu = false;
   inCreditsScreen = false;
   matchWon = false;
   currentState = STATE_MAIN_MENU;
@@ -141,7 +141,7 @@ void loop() {
     return;
   }
 
-  if (inOptionsMenu) {
+  if (currentState == STATE_OPTIONS) {
     handleOptionsMenu();
     return;
   }
@@ -212,12 +212,10 @@ void handleMainMenu() {
     }
 
     if (selectedMenuIndex == 3) {
-      inOptionsMenu = true;
       selectedOptionsIndex = 0;
       currentState = STATE_OPTIONS;
       drawOptionsMenu(selectedOptionsIndex);
     }
-
     delay(180);
   }
 
