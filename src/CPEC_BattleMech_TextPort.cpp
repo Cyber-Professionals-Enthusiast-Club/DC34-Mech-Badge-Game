@@ -841,11 +841,11 @@ void badgeSetup() {
 tft.setTextColor(ST77XX_GREEN);
 tft.setTextSize(2);
 tft.setCursor(20, 80);
-tft.println("CPEC MECH FIGHTERS");
+tft.println("CPEC - MECH FIGHTERS");
 
 tft.setTextColor(ST77XX_CYAN);
 tft.setCursor(45, 115);
-tft.println("TEXT PORT v0.5");
+tft.println("TEXT PORT v0.65");
 
 delay(1200);
 }

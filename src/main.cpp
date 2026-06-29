@@ -16,7 +16,8 @@ enum GameState {
   STATE_BATTLE_TEST,
   STATE_PILOT_RECORD,
   STATE_OPTIONS,
-  STATE_CREDITS
+  STATE_CREDITS,
+  STATE_WIN_SCREEN
 };
 
 //GLOBALS
@@ -58,6 +59,9 @@ void handleOptionsMenu();
 void handleCreditsScreen();
 void handleBattleTest();
 void returnToMainMenu();
+void handleWinScreen();
+void handleStatusScreen();
+void handlePilotRecordScreen();
 
 //------Helpers
 void returnToMainMenu() {
@@ -126,12 +130,11 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
 
 //===========LOOP()
 void loop() {
-  // keep existing matchWon handler here for now
-  if (matchWon) {
-  return;
-  }
 
    switch (currentState) {
+    case STATE_WIN_SCREEN:
+      handleWinScreen();
+      break;
 
     case STATE_MAIN_MENU:
       handleMainMenu();
@@ -150,16 +153,129 @@ void loop() {
       break;
 
     case STATE_STATUS:
-      // We'll build this next
+      handleStatusScreen();
       break;
 
     case STATE_PILOT_RECORD:
-      // We'll build this next
+      handlePilotRecordScreen();
       break;
   }
 }
 
+//================HANDLER FUNCTIONS
+
+void handleStatusScreen() {
+  if (digitalRead(BTN_B) == LOW) {
+    returnToMainMenu();
+    delay(180);
+  }
+}
+
+void handlePilotRecordScreen() {
+  if (digitalRead(BTN_B) == LOW) {
+    returnToMainMenu();
+    delay(180);
+  }
+}
+
+void handleWinScreen() {
+  if (digitalRead(BTN_B) == LOW) {
+    battleMessage = "Awaiting command...";
+    selectedWeaponIndex = 0;
+
+    initDummyTarget(dummyTarget);
+
+    playerMech.currentHeat = 0;
+    playerMech.shutdown = false;
+    playerMech.shutdownTurnsRemaining = 0;
+
+    for (ActiveWeapon &weapon : playerMech.weapons) {
+      if (weapon.maxAmmo >= 0) {
+        weapon.currentAmmo = weapon.maxAmmo;
+      }
+    }
+
+    returnToMainMenu();
+    delay(180);
+  }
+}
 void handleBattleTest() {
+  if (digitalRead(BTN_UP) == LOW) {
+    selectedWeaponIndex--;
+
+    if (selectedWeaponIndex < 0) {
+      selectedWeaponIndex = playerMech.weapons.size(); 
+      // +1 because index 0 is HOLD FIRE
+    }
+
+    drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
+    delay(180);
+  }
+
+  if (digitalRead(BTN_DOWN) == LOW) {
+    selectedWeaponIndex++;
+
+    if (selectedWeaponIndex > playerMech.weapons.size()) {
+      selectedWeaponIndex = 0;
+    }
+
+    drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
+    delay(180);
+  }
+
+  if (digitalRead(BTN_A) == LOW) {
+  if (selectedWeaponIndex == 0) {
+    holdFire(playerMech, battleMessage);
+  } else {
+    int realWeaponIndex = selectedWeaponIndex - 1;
+
+    attackDummyMech(
+      playerMech,
+      dummyTarget,
+      battleMessage,
+      realWeaponIndex
+    );
+
+  if (dummyTarget.destroyed) {
+    pilot.wins++;
+    pilot.kills++;
+    pilot.battles++;
+    pilot.xp += 100;
+
+    savePilotProfile(pilot);
+
+    currentState = STATE_WIN_SCREEN;
+    drawWinScreen(dummyTarget.destroyedReason);
+
+    delay(180);
+    return;
+  }
+
+    if (dummyTarget.destroyed) {
+      pilot.wins++;
+      pilot.kills++;
+      pilot.battles++;
+      pilot.xp += 100;
+      savePilotProfile(pilot);
+
+      currentState = STATE_WIN_SCREEN;
+      drawWinScreen(dummyTarget.destroyedReason);
+
+      delay(180);
+      return;
+    }
+  }
+
+  drawBattleTestScreen(
+    playerMech,
+    dummyTarget,
+    battleMessage,
+    selectedWeaponIndex
+  );
+
+  delay(180);
+}
+
   if (digitalRead(BTN_B) == LOW) {
     returnToMainMenu();
     delay(180);
@@ -173,6 +289,7 @@ void handleCreditsScreen() {
     delay(180);
   }
 }
+
 void handleOptionsMenu() {
   if (digitalRead(BTN_A) == LOW) {
     if (selectedOptionsIndex == 0) {
@@ -188,6 +305,7 @@ if (digitalRead(BTN_B) == LOW) {
   delay(180);
   }
 }
+
 void handleMainMenu() {
   if (digitalRead(BTN_UP) == LOW) {
     selectedMenuIndex--;
@@ -232,4 +350,5 @@ void handleMainMenu() {
     returnToMainMenu();
     delay(180);
   }
+  
 }
