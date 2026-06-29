@@ -31,7 +31,7 @@ int selectedOptionsIndex = 0;
 
 // bool inBattleTest = false;
 // bool inOptionsMenu = false;
-bool inCreditsScreen = false;
+// bool inCreditsScreen = false;
 bool matchWon = false;
 
 String battleMessage = "Awaiting command...";
@@ -63,7 +63,7 @@ void returnToMainMenu();
 void returnToMainMenu() {
   //inBattleTest = false;
   //inOptionsMenu = false;
-  inCreditsScreen = false;
+  //inCreditsScreen = false;
   matchWon = false;
   currentState = STATE_MAIN_MENU;
   drawMainMenu(selectedMenuIndex);
@@ -136,7 +136,7 @@ void loop() {
     return;
   }
 
-  if (inCreditsScreen) {
+  if (currentState == STATE_CREDITS) {
     handleCreditsScreen();
     return;
   }
@@ -158,7 +158,7 @@ void handleBattleTest() {
 
 void handleCreditsScreen() {
   if (digitalRead(BTN_B) == LOW) {
-    inCreditsScreen = false;
+    currentState = STATE_OPTIONS;
     drawOptionsMenu(selectedOptionsIndex);
     delay(180);
   }
@@ -166,9 +166,8 @@ void handleCreditsScreen() {
 void handleOptionsMenu() {
   if (digitalRead(BTN_A) == LOW) {
     if (selectedOptionsIndex == 0) {
-      inCreditsScreen = true;
-      currentState = STATE_CREDITS;
-      drawCreditsScreen();
+    currentState = STATE_CREDITS;
+    drawCreditsScreen();
     }
 
     delay(180);
