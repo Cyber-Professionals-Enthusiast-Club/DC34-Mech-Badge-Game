@@ -10,6 +10,7 @@
 #include "PilotRecordUI.h"
 #include "PlayerBuilderUI.h"
 #include "GameState.h"
+#include "BleDuel.h"
 
 //ENUMS
 
@@ -121,6 +122,8 @@ void setup() {
       drawPlayerNameScreen();
       return;
     }
+    
+    bleDuelSetup();
 
   if (!loadBadgeConfig(badge)) {
     Serial.println("Badge load failed");
