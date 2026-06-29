@@ -44,7 +44,7 @@ int selectedOptionsIndex = 0;
 // bool inCreditsScreen = false;
 bool matchWon = false;
 
-char nameBuffer[9] = "AAAAAAAA";
+char nameBuffer[9] = "        ";
 int nameCursor;
 int selectedFactionIndex;
 

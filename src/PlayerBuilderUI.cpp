@@ -40,7 +40,7 @@ void drawPlayerNameScreen() {
 
   tft.setTextSize(1);
   tft.setCursor(20, 205);
-  tft.println("UP=ADD A  DOWN=DELETE");
+  tft.println("UP/DOWN = Character. Left/Right = Cursor Position");
   tft.setCursor(20, 220);
   tft.println("A=NEXT");
 }
