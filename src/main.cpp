@@ -17,7 +17,9 @@ enum GameState {
   STATE_PILOT_RECORD,
   STATE_OPTIONS,
   STATE_CREDITS,
-  STATE_WIN_SCREEN
+  STATE_WIN_SCREEN,
+  STATE_PLAYER_NAME,
+  STATE_PLAYER_FACTION,
 };
 
 //GLOBALS
@@ -25,6 +27,21 @@ GameState currentState = STATE_MAIN_MENU;
 PilotProfile pilot;
 ActiveMech playerMech;
 DummyMechTarget dummyTarget;
+
+String newPilotName = "ACE";
+int selectedNameChar = 0;
+int selectedFactionIndex = 0;
+
+const char* FACTIONS[] = {
+  "BoomCorp LLC",
+  "MeatSlab Inc.",
+  "Reptile Sports Formula",
+  "Happy Sushi LTD.",
+  "Yuri's Consumables Inc",
+  "SmoCorp Industrial Concern"
+};
+
+const int FACTION_COUNT = 6;
 
 int selectedMenuIndex = 0;
 int selectedWeaponIndex = 0;
@@ -62,6 +79,10 @@ void returnToMainMenu();
 void handleWinScreen();
 void handleStatusScreen();
 void handlePilotRecordScreen();
+void drawPlayerNameScreen();
+void drawPlayerFactionScreen();
+void handlePlayerNameScreen();
+void handlePlayerFactionScreen();
 
 //------Helpers
 void returnToMainMenu() {
@@ -83,6 +104,9 @@ void setup() {
     Serial.println("LittleFS mount failed");
     return;
   }
+  
+  //TEST THIS-----------------------
+  // LittleFS.remove("/pilot_profile.json");
 
   BadgeConfig badge;
   std::vector<ChassisProfile> chassisProfiles;
@@ -90,10 +114,19 @@ void setup() {
 
   initDummyTarget(dummyTarget);
 
-    if (!loadPilotProfile(pilot)) {
-    Serial.println("Pilot load failed");
-    return;
-  }
+    bool pilotLoaded = loadPilotProfile(pilot);
+
+    if (!pilotLoaded) {
+      Serial.println("No pilot profile found; launching player creation.");
+      pilot = PilotProfile();   // reset to defaults
+    }
+
+    if (pilot.pilotName == "") {
+      badgeSetup();
+      currentState = STATE_PLAYER_NAME;
+      drawPlayerNameScreen();
+      return;
+    }
 
   if (!loadBadgeConfig(badge)) {
     Serial.println("Badge load failed");
@@ -158,6 +191,14 @@ void loop() {
 
     case STATE_PILOT_RECORD:
       handlePilotRecordScreen();
+      break;
+
+    case STATE_PLAYER_NAME:
+      handlePlayerNameScreen();
+      break;
+
+    case STATE_PLAYER_FACTION:
+      handlePlayerFactionScreen();
       break;
   }
 }
@@ -351,4 +392,116 @@ void handleMainMenu() {
     delay(180);
   }
   
+}
+
+void drawPlayerNameScreen() {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.setCursor(20, 20);
+  tft.println("NEW PILOT");
+
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setCursor(20, 80);
+  tft.print("CALLSIGN: ");
+  tft.println(newPilotName);
+
+  tft.setTextSize(1);
+  tft.setCursor(20, 205);
+  tft.println("UP=ADD A  DOWN=DELETE");
+  tft.setCursor(20, 220);
+  tft.println("A=NEXT");
+}
+
+void handlePlayerNameScreen() {
+  if (digitalRead(BTN_UP) == LOW) {
+    if (newPilotName.length() < 10) {
+      newPilotName += "A";
+    }
+    drawPlayerNameScreen();
+    delay(180);
+  }
+
+  if (digitalRead(BTN_DOWN) == LOW) {
+    if (newPilotName.length() > 0) {
+      newPilotName.remove(newPilotName.length() - 1);
+    }
+    drawPlayerNameScreen();
+    delay(180);
+  }
+
+  if (digitalRead(BTN_A) == LOW) {
+    currentState = STATE_PLAYER_FACTION;
+    drawPlayerFactionScreen();
+    delay(180);
+  }
+}
+void drawPlayerFactionScreen() {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.setCursor(20, 15);
+  tft.println("FACTION");
+
+  tft.setTextSize(1);
+
+  for (int i = 0; i < FACTION_COUNT; i++) {
+    int y = 50 + (i * 22);
+    tft.setCursor(20, y);
+
+    if (i == selectedFactionIndex) {
+      tft.setTextColor(ST77XX_YELLOW);
+      tft.print("> ");
+    } else {
+      tft.setTextColor(ST77XX_GREEN);
+      tft.print("  ");
+    }
+
+    tft.println(FACTIONS[i]);
+  }
+
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setCursor(20, 220);
+  tft.println("A=CONFIRM  B=BACK");
+} 
+
+void handlePlayerFactionScreen() {
+  if (digitalRead(BTN_UP) == LOW) {
+    selectedFactionIndex--;
+    if (selectedFactionIndex < 0) selectedFactionIndex = FACTION_COUNT - 1;
+    drawPlayerFactionScreen();
+    delay(180);
+  }
+
+  if (digitalRead(BTN_DOWN) == LOW) {
+    selectedFactionIndex++;
+    if (selectedFactionIndex >= FACTION_COUNT) selectedFactionIndex = 0;
+    drawPlayerFactionScreen();
+    delay(180);
+  }
+
+  if (digitalRead(BTN_B) == LOW) {
+    currentState = STATE_PLAYER_NAME;
+    drawPlayerNameScreen();
+    delay(180);
+  }
+
+  if (digitalRead(BTN_A) == LOW) {
+    pilot.pilotName = newPilotName;
+    pilot.faction = FACTIONS[selectedFactionIndex];
+    pilot.xp = 0;
+    pilot.level = 1;
+    pilot.skillPoints = 0;
+    pilot.wins = 0;
+    pilot.losses = 0;
+    pilot.kills = 0;
+    pilot.deaths = 0;
+    pilot.battles = 0;
+
+    savePilotProfile(pilot);
+
+    currentState = STATE_MAIN_MENU;
+    drawMainMenu(selectedMenuIndex);
+    delay(180);
+  }
 }
