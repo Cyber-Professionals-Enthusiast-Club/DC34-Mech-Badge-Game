@@ -29,7 +29,7 @@ int selectedMenuIndex = 0;
 int selectedWeaponIndex = 0;
 int selectedOptionsIndex = 0;
 
-bool inBattleTest = false;
+// bool inBattleTest = false;
 bool inOptionsMenu = false;
 bool inCreditsScreen = false;
 bool matchWon = false;
@@ -61,7 +61,7 @@ void returnToMainMenu();
 
 //------Helpers
 void returnToMainMenu() {
-  inBattleTest = false;
+  //inBattleTest = false;
   inOptionsMenu = false;
   inCreditsScreen = false;
   matchWon = false;
@@ -131,7 +131,7 @@ void loop() {
   return;
   }
 
-  if (inBattleTest) {
+  if (currentState == STATE_BATTLE_TEST) {
     handleBattleTest();
     return;
   }
@@ -147,17 +147,6 @@ void loop() {
   }
 
   handleMainMenu();
-}
-
-void returnToMainMenu() {
-  inBattleTest = false;
-  inOptionsMenu = false;
-  inCreditsScreen = false;
-  matchWon = false;
-
-  currentState = STATE_MAIN_MENU;
-
-  drawMainMenu(selectedMenuIndex);
 }
 
 void handleBattleTest() {
@@ -212,7 +201,7 @@ void handleMainMenu() {
     }
 
     if (selectedMenuIndex == 1) {
-      inBattleTest = true;
+      // inBattleTest = true;
       currentState = STATE_BATTLE_TEST;
       drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
     }
