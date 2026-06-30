@@ -11,6 +11,7 @@
 #include "PlayerBuilderUI.h"
 #include "GameState.h"
 #include "BleDuel.h"
+#include "BLEComms.h"
 
 //ENUMS
 
@@ -122,8 +123,6 @@ void setup() {
       drawPlayerNameScreen();
       return;
     }
-    
-    bleDuelSetup();
 
   if (!loadBadgeConfig(badge)) {
     Serial.println("Badge load failed");
@@ -153,13 +152,18 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
   Serial.println("ActiveMech build failed");
   return;
 }
+
   badgeSetup();
+  bleSetup();
+  // bleDuelSetup();
   drawMainMenu(selectedMenuIndex);
 }
 
 
 //===========LOOP()
 void loop() {
+
+bleLoop();
 
    switch (currentState) {
     case STATE_WIN_SCREEN:
