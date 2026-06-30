@@ -12,6 +12,7 @@
 #include "GameState.h"
 #include "BleDuel.h"
 #include "BLEComms.h"
+#include "RadarUI.h"
 
 //ENUMS
 
@@ -41,7 +42,7 @@ int selectedMenuIndex = 0;
 int selectedWeaponIndex = 0;
 int selectedOptionsIndex = 0;
 
-// bool inBattleTest = false;
+bool inBattleTest = false;
 // bool inOptionsMenu = false;
 // bool inCreditsScreen = false;
 bool matchWon = false;
@@ -79,6 +80,7 @@ void handleStatusScreen();
 void handlePilotRecordScreen();
 void handlePlayerNameScreen();
 void handlePlayerFactionScreen();
+void handleRadarScreen();
 
 //------Helpers
 void returnToMainMenu() {
@@ -101,6 +103,7 @@ void setup() {
     return;
   }
   
+
   //TEST THIS-----------------------
   // LittleFS.remove("/pilot_profile.json");
 
@@ -153,8 +156,11 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
   return;
 }
 
+  String bleName = String(activeChassis->displayName) + " - " + pilot.pilotName;
+  bleSetup(bleName);
+
   badgeSetup();
-  bleSetup();
+  bleSetup(String(activeChassis->displayName) + " - " + pilot.pilotName);
   // bleDuelSetup();
   drawMainMenu(selectedMenuIndex);
 }
@@ -201,6 +207,10 @@ bleLoop();
     case STATE_PLAYER_FACTION:
       handlePlayerFactionScreen();
       break;
+
+    case STATE_RADAR:
+      handleRadarScreen();
+      break;
   }
 }
 
@@ -218,6 +228,18 @@ void handlePilotRecordScreen() {
     returnToMainMenu();
     delay(180);
   }
+}
+
+void handleRadarScreen() {
+  drawRadarScreen();
+
+  if (digitalRead(BTN_B) == LOW) {
+    currentState = STATE_MAIN_MENU;
+    drawMainMenu(selectedMenuIndex);
+    delay(180);
+  }
+
+  delay(500);
 }
 
 void handleWinScreen() {
@@ -265,55 +287,32 @@ void handleBattleTest() {
     delay(180);
   }
 
-  if (digitalRead(BTN_A) == LOW) {
-  if (selectedWeaponIndex == 0) {
-    holdFire(playerMech, battleMessage);
-  } else {
-    int realWeaponIndex = selectedWeaponIndex - 1;
-
-    attackDummyMech(
-      playerMech,
-      dummyTarget,
-      battleMessage,
-      realWeaponIndex
-    );
-
-  if (dummyTarget.destroyed) {
-    pilot.wins++;
-    pilot.kills++;
-    pilot.battles++;
-    pilot.xp += 100;
-
-    savePilotProfile(pilot);
-
-    currentState = STATE_WIN_SCREEN;
-    drawWinScreen(dummyTarget.destroyedReason);
-
-    delay(180);
-    return;
+if (digitalRead(BTN_A) == LOW) {
+  if (selectedMenuIndex == 0) {
+    currentState = STATE_STATUS;
+    drawCockpitStatusTFT(playerMech);
   }
 
-    if (dummyTarget.destroyed) {
-      pilot.wins++;
-      pilot.kills++;
-      pilot.battles++;
-      pilot.xp += 100;
-      savePilotProfile(pilot);
-
-      currentState = STATE_WIN_SCREEN;
-      drawWinScreen(dummyTarget.destroyedReason);
-
-      delay(180);
-      return;
-    }
+  if (selectedMenuIndex == 1) {
+    currentState = STATE_BATTLE_TEST;
+    drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
   }
 
-  drawBattleTestScreen(
-    playerMech,
-    dummyTarget,
-    battleMessage,
-    selectedWeaponIndex
-  );
+  if (selectedMenuIndex == 2) {
+    currentState = STATE_RADAR;
+    drawRadarScreen();
+  }
+
+  if (selectedMenuIndex == 3) {
+    currentState = STATE_PILOT_RECORD;
+    drawPilotRecordScreen(pilot);
+  }
+
+  if (selectedMenuIndex == 4) {
+    currentState = STATE_OPTIONS;
+    selectedOptionsIndex = 0;
+    drawOptionsMenu(selectedOptionsIndex);
+  }
 
   delay(180);
 }
@@ -351,14 +350,14 @@ if (digitalRead(BTN_B) == LOW) {
 void handleMainMenu() {
   if (digitalRead(BTN_UP) == LOW) {
     selectedMenuIndex--;
-    if (selectedMenuIndex < 0) selectedMenuIndex = 3;
+    if (selectedMenuIndex < 0) selectedMenuIndex = 4;
     drawMainMenu(selectedMenuIndex);
     delay(180);
   }
 
   if (digitalRead(BTN_DOWN) == LOW) {
     selectedMenuIndex++;
-    if (selectedMenuIndex > 3) selectedMenuIndex = 0;
+    if (selectedMenuIndex > 4) selectedMenuIndex = 0;
     drawMainMenu(selectedMenuIndex);
     delay(180);
   }
@@ -370,29 +369,40 @@ void handleMainMenu() {
     }
 
     if (selectedMenuIndex == 1) {
-      // inBattleTest = true;
       currentState = STATE_BATTLE_TEST;
       drawBattleTestScreen(playerMech, dummyTarget, battleMessage, selectedWeaponIndex);
     }
 
     if (selectedMenuIndex == 2) {
+      currentState = STATE_RADAR;
+
+      tft.fillScreen(ST77XX_BLACK);
+      tft.setTextColor(ST77XX_GREEN);
+      tft.setTextSize(2);
+      tft.setCursor(20, 20);
+      tft.println("RADAR");
+
+      tft.setTextSize(1);
+      tft.setCursor(20, 60);
+      tft.println("BLE scan screen soon");
+
+      tft.setCursor(20, 220);
+      tft.println("B=BACK");
+    }
+
+    if (selectedMenuIndex == 3) {
       currentState = STATE_PILOT_RECORD;
       drawPilotRecordScreen(pilot);
     }
 
-    if (selectedMenuIndex == 3) {
-      selectedOptionsIndex = 0;
+    if (selectedMenuIndex == 4) {
       currentState = STATE_OPTIONS;
+      selectedOptionsIndex = 0;
       drawOptionsMenu(selectedOptionsIndex);
     }
-    delay(180);
-  }
 
-  if (digitalRead(BTN_B) == LOW) {
-    returnToMainMenu();
     delay(180);
   }
-  
 }
 
 void handlePlayerNameScreen() {
