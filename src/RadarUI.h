@@ -1,3 +1,3 @@
 #pragma once
 
-void drawRadarScreen();
+void drawRadarScreen(int selectedIndex);

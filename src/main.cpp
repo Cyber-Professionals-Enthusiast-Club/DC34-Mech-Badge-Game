@@ -26,6 +26,8 @@ DummyMechTarget dummyTarget;
 String newPilotName = "ACE";
 int selectedNameChar = 0;
 
+int selectedRadarIndex = 0;
+
 
 const char* FACTIONS[] = {
   "BoomCorp LLC",
@@ -231,15 +233,72 @@ void handlePilotRecordScreen() {
 }
 
 void handleRadarScreen() {
-  drawRadarScreen();
+  int count = getNearbyBadgeCount();
+
+  if (selectedRadarIndex >= count && count > 0) {
+    selectedRadarIndex = count - 1;
+  }
+
+  if (selectedRadarIndex < 0) {
+    selectedRadarIndex = 0;
+  }
+
+  if (digitalRead(BTN_UP) == LOW && count > 0) {
+    selectedRadarIndex--;
+    if (selectedRadarIndex < 0) selectedRadarIndex = count - 1;
+
+    drawRadarScreen(selectedRadarIndex);
+    delay(180);
+    return;
+  }
+
+  if (digitalRead(BTN_DOWN) == LOW && count > 0) {
+    selectedRadarIndex++;
+    if (selectedRadarIndex >= count) selectedRadarIndex = 0;
+
+    drawRadarScreen(selectedRadarIndex);
+    delay(180);
+    return;
+  }
+
+  if (digitalRead(BTN_A) == LOW && count > 0) {
+    NearbyBadge badge = getNearbyBadge(selectedRadarIndex);
+
+    tft.fillScreen(ST77XX_BLACK);
+    tft.setTextColor(ST77XX_YELLOW);
+    tft.setTextSize(2);
+    tft.setCursor(20, 20);
+    tft.println("TARGET LOCK");
+
+    tft.setTextColor(ST77XX_GREEN);
+    tft.setTextSize(1);
+    tft.setCursor(20, 70);
+    tft.println(badge.name);
+
+    tft.setCursor(20, 95);
+    tft.print("RSSI ");
+    tft.println(badge.rssi);
+
+    tft.setCursor(20, 220);
+    tft.println("B=BACK");
+
+    delay(180);
+    return;
+  }
 
   if (digitalRead(BTN_B) == LOW) {
     currentState = STATE_MAIN_MENU;
     drawMainMenu(selectedMenuIndex);
     delay(180);
+    return;
   }
 
-  delay(500);
+  static unsigned long lastRadarDrawMs = 0;
+
+  if (millis() - lastRadarDrawMs > 1000) {
+    lastRadarDrawMs = millis();
+    drawRadarScreen(selectedRadarIndex);
+  }
 }
 
 void handleWinScreen() {
@@ -300,7 +359,7 @@ if (digitalRead(BTN_A) == LOW) {
 
   if (selectedMenuIndex == 2) {
     currentState = STATE_RADAR;
-    drawRadarScreen();
+    drawRadarScreen(selectedRadarIndex);
   }
 
   if (selectedMenuIndex == 3) {

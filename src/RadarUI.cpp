@@ -3,7 +3,7 @@
 #include "CPEC_BattleMech_TextPort.h"
 
 
-void drawRadarScreen() {
+void drawRadarScreen(int selectedIndex) {
   tft.fillScreen(ST77XX_BLACK);
   tft.setTextWrap(false);
 
@@ -26,16 +26,25 @@ void drawRadarScreen() {
       int y = 55 + (i * 22);
 
       tft.setCursor(20, y);
+
+      if (i == selectedIndex) {
+        tft.setTextColor(ST77XX_YELLOW);
+        tft.print("> ");
+      } else {
+        tft.setTextColor(ST77XX_GREEN);
+        tft.print("  ");
+      }
+
       tft.print(badge.name);
 
       tft.setCursor(220, y);
       tft.print("RSSI ");
       tft.println(badge.rssi);
-    }
   }
 
   tft.setTextColor(ST77XX_CYAN);
+  tft.setTextSize(1);
   tft.setCursor(20, 220);
-  tft.println("B=BACK");
+  tft.println("UP/DOWN SELECT  A=LOCK  B=BACK");
 }
-
+}
