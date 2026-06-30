@@ -5,7 +5,6 @@
 
 static NearbyBadge nearbyBadges[10];
 static int nearbyCount = 0;
-
 static unsigned long lastScanMs = 0;
 static const unsigned long SCAN_INTERVAL_MS = 5000;
 static const int MAX_NEARBY_BADGES = 10;
@@ -34,12 +33,12 @@ void bleLoop() {
 
   nearbyCount = 0;
 
-  NimBLEScan *scan = NimBLEDevice::getScan();
-  scan->setActiveScan(true);
-  scan->setInterval(45);
-  scan->setWindow(15);
+    NimBLEScan *scan = NimBLEDevice::getScan();
+    scan->setActiveScan(true);
+    scan->setInterval(45);
+    scan->setWindow(15);
 
-  NimBLEScanResults results = scan->getResults(2, false);
+    NimBLEScanResults results = scan->getResults(2000, false);
 
   for (int i = 0; i < results.getCount(); i++) {
     const NimBLEAdvertisedDevice *device = results.getDevice(i);
