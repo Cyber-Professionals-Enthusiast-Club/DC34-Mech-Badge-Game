@@ -42,3 +42,22 @@ bool decodeCpecAdvertisement(const String &data, CpecAdvertisedPilot &pilot) {
 
   return true;
 }
+
+uint8_t chassisCodeFromId(const String &chassisId) {
+  if (chassisId == "PEST") return 1;
+  if (chassisId == "CREEPER") return 2;
+  if (chassisId == "PATHFINDER") return 3;
+  if (chassisId == "DOZER") return 4;
+
+  return 0;
+}
+
+String chassisNameFromCode(uint8_t code) {
+  switch (code) {
+    case 1: return "Pest";
+    case 2: return "Creeper";
+    case 3: return "Pathfinder";
+    case 4: return "Dozer";
+    default: return "Unknown";
+  }
+}

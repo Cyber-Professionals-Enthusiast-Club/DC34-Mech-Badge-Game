@@ -16,3 +16,6 @@ struct CpecAdvertisedPilot {
 
 String encodeCpecAdvertisement(const CpecAdvertisedPilot &pilot);
 bool decodeCpecAdvertisement(const String &data, CpecAdvertisedPilot &pilot);
+
+uint8_t chassisCodeFromId(const String &chassisId);
+String chassisNameFromCode(uint8_t code);

@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <NimBLEDevice.h>
+#include "WirelessProtocol.h"
 
 static NearbyBadge nearbyBadges[10];
 static int nearbyCount = 0;
@@ -16,7 +17,7 @@ void bleSetup(const CpecAdvertisedPilot &pilot) {
 
   NimBLEAdvertisementData advData;
   advData.setName("CPEC-BADGE");
-  advData.setManufacturerData(advString.c_str());
+  advData.setServiceData(NimBLEUUID("FFF0"), advString.c_str());
 
   NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
   advertising->setAdvertisementData(advData);
@@ -32,42 +33,55 @@ void bleLoop() {
   }
 
   lastScanMs = millis();
-
   nearbyCount = 0;
 
-    NimBLEScan *scan = NimBLEDevice::getScan();
-    scan->setActiveScan(true);
-    scan->setInterval(45);
-    scan->setWindow(15);
+  NimBLEScan *scan = NimBLEDevice::getScan();
+  scan->setActiveScan(true);
+  scan->setInterval(45);
+  scan->setWindow(15);
 
-    NimBLEScanResults results = scan->getResults(2000, false);
+  NimBLEScanResults results = scan->getResults(2000, false);
 
   for (int i = 0; i < results.getCount(); i++) {
     const NimBLEAdvertisedDevice *device = results.getDevice(i);
+        String protocolData = device->getServiceData().c_str();
 
-    if (!device->haveName()) {
-      continue;
-    }
+            if (device->haveName()) {
+                Serial.print("BLE name: ");
+                Serial.println(device->getName().c_str());
+            }
 
-    String name = device->getName().c_str();
-    if (!name.startsWith("CPEC:")) {
-    continue;
+            Serial.print("Service data: [");
+            Serial.print(protocolData);
+            Serial.println("]");
 
-    
-}
+        CpecAdvertisedPilot remotePilot;
 
-    // For now, only collect CPEC-style badge names.
-    // This will catch names like "Pathfinder - HAWK".
-    if (name.length() == 0) {
-      continue;
-    }
-    String displayName = name.substring(5);
+        if (decodeCpecAdvertisement(protocolData, remotePilot)) {
+             Serial.println("CPEC decode OK");
 
-    if (nearbyCount < MAX_NEARBY_BADGES) {
-    nearbyBadges[nearbyCount].name = displayName;
-    nearbyBadges[nearbyCount].rssi = device->getRSSI();
-    nearbyCount++;
-}
+        // replace the above with this at that last blue bracket {
+        //String displayName = remotePilot.pilotName;
+        //displayName += " - ";
+        //displayName += chassisNameFromCode(remotePilot.chassisId);
+
+        //if (nearbyCount < MAX_NEARBY_BADGES) {
+        //    nearbyBadges[nearbyCount].name = displayName;
+        //    nearbyBadges[nearbyCount].rssi = device->getRSSI();
+        //    nearbyCount++;
+        //}
+        continue;
+        }
+
+        if (device->haveName()) {
+        String devName = device->getName().c_str();
+
+        if (devName == "CPEC-BADGE" && nearbyCount < MAX_NEARBY_BADGES) {
+            nearbyBadges[nearbyCount].name = "Unknown CPEC Badge";
+            nearbyBadges[nearbyCount].rssi = device->getRSSI();
+            nearbyCount++;
+        }
+        }
   }
 
   scan->clearResults();

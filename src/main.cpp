@@ -13,6 +13,7 @@
 #include "BleDuel.h"
 #include "BLEComms.h"
 #include "RadarUI.h"
+#include "WirelessProtocol.h"
 
 //ENUMS
 
@@ -22,6 +23,8 @@ GameState currentState = STATE_MAIN_MENU;
 PilotProfile pilot;
 ActiveMech playerMech;
 DummyMechTarget dummyTarget;
+
+bool radarTargetLocked = false;
 
 String newPilotName = "ACE";
 int selectedNameChar = 0;
@@ -160,7 +163,7 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
 
     CpecAdvertisedPilot advertisedPilot;
     advertisedPilot.pilotName = pilot.pilotName;
-    advertisedPilot.chassisId = 1; // temporary
+    advertisedPilot.chassisId = chassisCodeFromId(badge.chassisId);
     advertisedPilot.factionId = 0; // temporary
 
     bleSetup(advertisedPilot);
@@ -236,6 +239,15 @@ void handlePilotRecordScreen() {
 }
 
 void handleRadarScreen() {
+    if (radarTargetLocked) {
+    if (digitalRead(BTN_B) == LOW) {
+      radarTargetLocked = false;
+      drawRadarScreen(selectedRadarIndex);
+      delay(180);
+    }
+    return;
+  }
+
   int count = getNearbyBadgeCount();
 
   if (selectedRadarIndex >= count && count > 0) {
@@ -266,6 +278,8 @@ void handleRadarScreen() {
 
   if (digitalRead(BTN_A) == LOW && count > 0) {
     NearbyBadge badge = getNearbyBadge(selectedRadarIndex);
+
+    radarTargetLocked = true;
 
     tft.fillScreen(ST77XX_BLACK);
     tft.setTextColor(ST77XX_YELLOW);
