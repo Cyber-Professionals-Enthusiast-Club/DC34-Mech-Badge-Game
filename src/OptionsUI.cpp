@@ -24,32 +24,11 @@ void drawCreditsScreen() {
 
   tft.setTextColor(ST77XX_YELLOW);
   tft.setTextSize(2);
-<<<<<<< HEAD
-  tft.setCursor(20, 25);
-=======
   tft.setCursor(20, 35);
->>>>>>> fef19dc40ec0186dbeb34a5ac7716417a8ac0c3f
   tft.println("CREDITS");
 
   tft.setTextColor(ST77XX_GREEN);
   tft.setTextSize(1);
-<<<<<<< HEAD
-  tft.setCursor(30, 55);     
-  tft.println("CPEC Mech Fighters- A DEFCON 34 Badge");
-  tft.println("2026 Cybersecurity Enthusiasts and Professionals Club");
-  tft.println("");
-  tft.println("Game Design: dirtybert");
-  tft.println("Graphics/UI): Artist");
-  tft.println("Firmware: Ministry");
-  tft.println("Artwork: Scriptk80");
-  tft.println("Game Programming: sshinobi");
-  tft.println("Web/Database: Meek the CyberFreak");
-  tft.println("Hardware Design: Ministry, Brothercroo, Artist");
-  tft.println("Communication Design: Aniziki");
-  tft.println("Social Media: Scriptk80");
-  tft.println("");
-  tft.println("http://cpec.club");
-=======
   tft.setCursor(35, 55);
   tft.println("CPEC Mech Fighters - 2026");
   tft.setCursor(40, 75);
@@ -71,7 +50,6 @@ void drawCreditsScreen() {
   tft.setCursor(40, 155);
   tft.println("Social Media: Scriptk80");
   tft.setCursor(40, 165);
->>>>>>> fef19dc40ec0186dbeb34a5ac7716417a8ac0c3f
   tft.println("");
   tft.setCursor(40, 175);
   tft.println("http://cpec.club // IG: CPEC // X: CPEC.CLUB");

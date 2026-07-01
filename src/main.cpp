@@ -158,8 +158,12 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
   return;
 }
 
-  String bleName = "CPEC:" + String(activeChassis->displayName) + "-" + pilot.pilotName;
-  bleSetup(bleName);
+    CpecAdvertisedPilot advertisedPilot;
+    advertisedPilot.pilotName = pilot.pilotName;
+    advertisedPilot.chassisId = 1; // temporary
+    advertisedPilot.factionId = 0; // temporary
+
+    bleSetup(advertisedPilot);
 
   badgeSetup();
   // bleDuelSetup();

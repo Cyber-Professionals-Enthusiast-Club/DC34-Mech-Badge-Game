@@ -9,18 +9,21 @@ static unsigned long lastScanMs = 0;
 static const unsigned long SCAN_INTERVAL_MS = 5000;
 static const int MAX_NEARBY_BADGES = 10;
 
-void bleSetup(const String &advertisingName) {
-  NimBLEDevice::init(advertisingName.c_str());
+void bleSetup(const CpecAdvertisedPilot &pilot) {
+  NimBLEDevice::init("CPEC-BADGE");
+
+  String advString = encodeCpecAdvertisement(pilot);
 
   NimBLEAdvertisementData advData;
-  advData.setName(advertisingName.c_str());
+  advData.setName("CPEC-BADGE");
+  advData.setManufacturerData(advString.c_str());
 
   NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
   advertising->setAdvertisementData(advData);
   advertising->start();
 
-  Serial.print("BLE Advertising Started: ");
-  Serial.println(advertisingName);
+  Serial.print("BLE Advertising: ");
+  Serial.println(advString);
 }
 
 void bleLoop() {
