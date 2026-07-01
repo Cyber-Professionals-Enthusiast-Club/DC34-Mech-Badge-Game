@@ -158,11 +158,10 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
   return;
 }
 
-  String bleName = String(activeChassis->displayName) + " - " + pilot.pilotName;
+  String bleName = "CPEC:" + String(activeChassis->displayName) + "-" + pilot.pilotName;
   bleSetup(bleName);
 
   badgeSetup();
-  bleSetup(String(activeChassis->displayName) + " - " + pilot.pilotName);
   // bleDuelSetup();
   drawMainMenu(selectedMenuIndex);
 }
@@ -443,7 +442,7 @@ void handleMainMenu() {
 
       tft.setTextSize(1);
       tft.setCursor(20, 60);
-      tft.println("BLE scan screen soon");
+      tft.println("Area scan initializing...");
 
       tft.setCursor(20, 220);
       tft.println("B=BACK");

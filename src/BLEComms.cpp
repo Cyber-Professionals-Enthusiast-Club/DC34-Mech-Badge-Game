@@ -12,12 +12,11 @@ static const int MAX_NEARBY_BADGES = 10;
 void bleSetup(const String &advertisingName) {
   NimBLEDevice::init(advertisingName.c_str());
 
-  NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
-
   NimBLEAdvertisementData advData;
   advData.setName(advertisingName.c_str());
-  advertising->setAdvertisementData(advData);
 
+  NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+  advertising->setAdvertisementData(advData);
   advertising->start();
 
   Serial.print("BLE Advertising Started: ");
@@ -48,18 +47,24 @@ void bleLoop() {
     }
 
     String name = device->getName().c_str();
+    if (!name.startsWith("CPEC:")) {
+    continue;
+
+    
+}
 
     // For now, only collect CPEC-style badge names.
     // This will catch names like "Pathfinder - HAWK".
     if (name.length() == 0) {
       continue;
     }
+    String displayName = name.substring(5);
 
     if (nearbyCount < MAX_NEARBY_BADGES) {
-      nearbyBadges[nearbyCount].name = name;
-      nearbyBadges[nearbyCount].rssi = device->getRSSI();
-      nearbyCount++;
-    }
+    nearbyBadges[nearbyCount].name = displayName;
+    nearbyBadges[nearbyCount].rssi = device->getRSSI();
+    nearbyCount++;
+}
   }
 
   scan->clearResults();

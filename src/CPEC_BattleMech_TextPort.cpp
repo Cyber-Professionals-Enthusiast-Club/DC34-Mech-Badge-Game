@@ -854,7 +854,7 @@ tft.println("CPEC - MECH FIGHTERS");
 
 tft.setTextColor(ST77XX_CYAN);
 tft.setCursor(45, 115);
-tft.println("TEXT PORT v0.65");
+tft.println("TEXT PORT v0.69 (nice)");
 
 delay(1200);
 }
