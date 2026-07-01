@@ -827,8 +827,17 @@ void badgeSetup() {
   Serial.begin(115200);
   delay(1500);
 
-  pinMode(TFT_BL, OUTPUT);
-  digitalWrite(TFT_BL, HIGH);
+ pinMode(BTN_UP, INPUT_PULLUP);
+ pinMode(BTN_DOWN, INPUT_PULLUP);
+ pinMode(BTN_LEFT, INPUT_PULLUP);
+ pinMode(BTN_RIGHT, INPUT_PULLUP);
+ pinMode(BTN_SELECT, INPUT_PULLUP);
+ pinMode(BTN_START, INPUT_PULLUP);
+ pinMode(BTN_A, INPUT_PULLUP);
+ pinMode(BTN_B, INPUT_PULLUP);
+
+ pinMode(TFT_BL, OUTPUT);
+ digitalWrite(TFT_BL, HIGH);
 
   displaySpi.begin(TFT_SCLK, -1, TFT_MOSI, TFT_CS);
 
@@ -841,11 +850,11 @@ void badgeSetup() {
 tft.setTextColor(ST77XX_GREEN);
 tft.setTextSize(2);
 tft.setCursor(20, 80);
-tft.println("CPEC MECH FIGHTERS");
+tft.println("CPEC - MECH FIGHTERS");
 
 tft.setTextColor(ST77XX_CYAN);
 tft.setCursor(45, 115);
-tft.println("TEXT PORT v0.5");
+tft.println("TEXT PORT v0.69 (nice)");
 
 delay(1200);
 }

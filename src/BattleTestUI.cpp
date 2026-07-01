@@ -96,7 +96,7 @@ else {
   tft.setTextColor(ST77XX_RED);
 }
 
-tft.setCursor(20, 62);
+tft.setCursor(20, 52);
 tft.print("HEAT: ");
 tft.print(mech.currentHeat);
 tft.print("/");
@@ -148,7 +148,7 @@ tft.println(weaponLine);
   weaponY += 12;
 }
 
-  tft.setCursor(20, 52);
+  tft.setCursor(10, 62);
   tft.print("TARGET: ");
   tft.println(target.name);
 
