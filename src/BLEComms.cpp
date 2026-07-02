@@ -11,20 +11,22 @@ static const unsigned long SCAN_INTERVAL_MS = 5000;
 static const int MAX_NEARBY_BADGES = 10;
 
 void bleSetup(const CpecAdvertisedPilot &pilot) {
-  NimBLEDevice::init("CPEC-BADGE");
+  String advName = "C|";
+  advName += pilot.chassisId;
+  advName += "|";
+  advName += pilot.pilotName;
 
-  String advString = encodeCpecAdvertisement(pilot);
+  NimBLEDevice::init(advName.c_str());
 
   NimBLEAdvertisementData advData;
-  advData.setName("CPEC-BADGE");
-  advData.setServiceData(NimBLEUUID("FFF0"), advString.c_str());
+  advData.setName(advName.c_str());
 
   NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
   advertising->setAdvertisementData(advData);
   advertising->start();
 
   Serial.print("BLE Advertising: ");
-  Serial.println(advString);
+  Serial.println(advName);
 }
 
 void bleLoop() {
@@ -44,44 +46,32 @@ void bleLoop() {
 
   for (int i = 0; i < results.getCount(); i++) {
     const NimBLEAdvertisedDevice *device = results.getDevice(i);
-        String protocolData = device->getServiceData().c_str();
 
-            if (device->haveName()) {
-                Serial.print("BLE name: ");
-                Serial.println(device->getName().c_str());
-            }
+    if (!device->haveName()) {
+      continue;
+    }
 
-            //Serial.print("Service data: [");
-            //Serial.print(protocolData);
-            //Serial.println("]");
+    String protocolData = device->getName().c_str();
+        Serial.print("BLE seen: ");
+        Serial.println(protocolData);
 
-        CpecAdvertisedPilot remotePilot;
+    CpecAdvertisedPilot remotePilot;
 
-            if (decodeCpecAdvertisement(protocolData, remotePilot)) {
-                Serial.println("CPEC decode OK");
+    if (!decodeCpecAdvertisement(protocolData, remotePilot)) {
+      continue;
+    }
 
-                String displayName = remotePilot.pilotName;
-                displayName += " - ";
-                displayName += chassisNameFromCode(remotePilot.chassisId);
+    Serial.println("CPEC decode OK");
 
-                if (nearbyCount < MAX_NEARBY_BADGES) {
-                    nearbyBadges[nearbyCount].name = displayName;
-                    nearbyBadges[nearbyCount].rssi = device->getRSSI();
-                    nearbyCount++;
-                }
+    String displayName = remotePilot.pilotName;
+    displayName += " - ";
+    displayName += chassisNameFromCode(remotePilot.chassisId);
 
-            continue;
-}
-
-        if (device->haveName()) {
-        String devName = device->getName().c_str();
-
-        if (devName == "CPEC-BADGE" && nearbyCount < MAX_NEARBY_BADGES) {
-            nearbyBadges[nearbyCount].name = "Unknown CPEC Badge";
-            nearbyBadges[nearbyCount].rssi = device->getRSSI();
-            nearbyCount++;
-        }
-        }
+    if (nearbyCount < MAX_NEARBY_BADGES) {
+      nearbyBadges[nearbyCount].name = displayName;
+      nearbyBadges[nearbyCount].rssi = device->getRSSI();
+      nearbyCount++;
+    }
   }
 
   scan->clearResults();

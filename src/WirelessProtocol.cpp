@@ -21,6 +21,26 @@ String encodeCpecAdvertisement(const CpecAdvertisedPilot &pilot) {
 }
 
 bool decodeCpecAdvertisement(const String &data, CpecAdvertisedPilot &pilot) {
+  // New compact format:
+  // C|3|STEVE
+  if (data.startsWith("C|")) {
+    int p1 = data.indexOf('|', 2);
+
+    if (p1 < 0) {
+      return false;
+    }
+
+    pilot.version = CPEC_PROTOCOL_VERSION;
+    pilot.flags = CPEC_FLAG_READY | CPEC_FLAG_ACCEPTING_CHALLENGES;
+    pilot.chassisId = data.substring(2, p1).toInt();
+    pilot.factionId = 0;
+    pilot.pilotName = data.substring(p1 + 1);
+
+    return true;
+  }
+
+  // Older full format:
+  // CPEC|1|5|3|0|STEVE
   if (!data.startsWith("CPEC|")) {
     return false;
   }
