@@ -86,6 +86,7 @@ void handlePilotRecordScreen();
 void handlePlayerNameScreen();
 void handlePlayerFactionScreen();
 void handleRadarScreen();
+void handleChallengeSentScreen();
 
 //------Helpers
 void returnToMainMenu() {
@@ -219,6 +220,10 @@ bleLoop();
     case STATE_RADAR:
       handleRadarScreen();
       break;
+
+    case STATE_CHALLENGE_SENT:
+      handleChallengeSentScreen();
+      break;
   }
 }
 
@@ -279,25 +284,9 @@ void handleRadarScreen() {
   if (digitalRead(BTN_A) == LOW && count > 0) {
     NearbyBadge badge = getNearbyBadge(selectedRadarIndex);
 
-    radarTargetLocked = true;
-
-    tft.fillScreen(ST77XX_BLACK);
-    tft.setTextColor(ST77XX_YELLOW);
-    tft.setTextSize(2);
-    tft.setCursor(20, 20);
-    tft.println("TARGET LOCK");
-
-    tft.setTextColor(ST77XX_GREEN);
-    tft.setTextSize(1);
-    tft.setCursor(20, 70);
-    tft.println(badge.name);
-
-    tft.setCursor(20, 95);
-    tft.print("RSSI ");
-    tft.println(badge.rssi);
-
-    tft.setCursor(20, 220);
-    tft.println("B=BACK");
+    currentState = STATE_CHALLENGE_SENT;
+      delay(180);
+      return;
 
     delay(180);
     return;
@@ -610,5 +599,34 @@ void handlePlayerFactionScreen() {
     currentState = STATE_MAIN_MENU;
     drawMainMenu(selectedMenuIndex);
     delay(180);
+  }
+}
+
+void handleChallengeSentScreen() {
+
+  tft.fillScreen(ST77XX_BLACK);
+
+  tft.setTextColor(ST77XX_GREEN);
+
+  tft.setTextSize(2);
+  tft.setCursor(20,20);
+  tft.println("CHALLENGE");
+
+  tft.setCursor(20,50);
+  tft.println("SENT");
+
+  tft.setTextSize(1);
+
+  tft.setCursor(20,100);
+  tft.println("Waiting...");
+
+  tft.setCursor(20,220);
+  tft.println("B = Cancel");
+
+  if (digitalRead(BTN_B) == LOW) {
+
+      currentState = STATE_RADAR;
+      drawRadarScreen(selectedRadarIndex);
+      delay(180);
   }
 }
