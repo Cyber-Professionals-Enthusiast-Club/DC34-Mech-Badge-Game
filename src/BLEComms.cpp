@@ -51,27 +51,27 @@ void bleLoop() {
                 Serial.println(device->getName().c_str());
             }
 
-            Serial.print("Service data: [");
-            Serial.print(protocolData);
-            Serial.println("]");
+            //Serial.print("Service data: [");
+            //Serial.print(protocolData);
+            //Serial.println("]");
 
         CpecAdvertisedPilot remotePilot;
 
-        if (decodeCpecAdvertisement(protocolData, remotePilot)) {
-             Serial.println("CPEC decode OK");
+            if (decodeCpecAdvertisement(protocolData, remotePilot)) {
+                Serial.println("CPEC decode OK");
 
-        // replace the above with this at that last blue bracket {
-        //String displayName = remotePilot.pilotName;
-        //displayName += " - ";
-        //displayName += chassisNameFromCode(remotePilot.chassisId);
+                String displayName = remotePilot.pilotName;
+                displayName += " - ";
+                displayName += chassisNameFromCode(remotePilot.chassisId);
 
-        //if (nearbyCount < MAX_NEARBY_BADGES) {
-        //    nearbyBadges[nearbyCount].name = displayName;
-        //    nearbyBadges[nearbyCount].rssi = device->getRSSI();
-        //    nearbyCount++;
-        //}
-        continue;
-        }
+                if (nearbyCount < MAX_NEARBY_BADGES) {
+                    nearbyBadges[nearbyCount].name = displayName;
+                    nearbyBadges[nearbyCount].rssi = device->getRSSI();
+                    nearbyCount++;
+                }
+
+            continue;
+}
 
         if (device->haveName()) {
         String devName = device->getName().c_str();
