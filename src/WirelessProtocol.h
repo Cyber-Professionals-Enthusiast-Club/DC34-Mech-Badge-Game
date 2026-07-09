@@ -19,3 +19,11 @@ bool decodeCpecAdvertisement(const String &data, CpecAdvertisedPilot &pilot);
 
 uint8_t chassisCodeFromId(const String &chassisId);
 String chassisNameFromCode(uint8_t code);
+
+struct CpecChallengePacket {
+  String challengerName;
+  uint8_t chassisId = 0;
+};
+
+String encodeChallengePacket(const CpecAdvertisedPilot &pilot);
+bool decodeChallengePacket(const String &data, CpecChallengePacket &packet);

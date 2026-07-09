@@ -238,6 +238,19 @@ bleLoop();
       handleMultiplayerBattleScreen();
       break;
   }
+
+  if (bleHasIncomingChallenge() && currentState != STATE_CHALLENGE_SENT) {
+  CpecChallengePacket challenge = bleGetIncomingChallenge();
+
+  incomingChallengerName = challenge.challengerName;
+  incomingChallengerChassis = chassisNameFromCode(challenge.chassisId);
+  hasIncomingChallenge = true;
+
+  bleClearIncomingChallenge();
+
+  currentState = STATE_INCOMING_CHALLENGE;
+}
+
 }
 
 //================HANDLER FUNCTIONS
@@ -703,14 +716,15 @@ void handleChallengeSentScreen() {
   tft.println("B = Cancel");
 
 if (digitalRead(BTN_A) == LOW) {
-  incomingChallengerName = "TEST PILOT";
-  incomingChallengerChassis = "Pathfinder";
-  hasIncomingChallenge = true;
-  currentState = STATE_INCOMING_CHALLENGE;
+  CpecAdvertisedPilot challengePilot;
+  challengePilot.pilotName = pilot.pilotName;
+  challengePilot.chassisId = chassisCodeFromId(playerMech.badge.chassisId);
+
+  bleAdvertiseChallenge(challengePilot);
+
   delay(180);
   return;
 }
-
   if (digitalRead(BTN_B) == LOW) {
 
       currentState = STATE_RADAR;

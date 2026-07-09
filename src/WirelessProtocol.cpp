@@ -63,6 +63,31 @@ bool decodeCpecAdvertisement(const String &data, CpecAdvertisedPilot &pilot) {
   return true;
 }
 
+String encodeChallengePacket(const CpecAdvertisedPilot &pilot) {
+  String out = "Q|";
+  out += pilot.pilotName;
+  out += "|";
+  out += pilot.chassisId;
+  return out;
+}
+
+bool decodeChallengePacket(const String &data, CpecChallengePacket &packet) {
+  if (!data.startsWith("Q|")) {
+    return false;
+  }
+
+  int p1 = data.indexOf('|', 2);
+
+  if (p1 < 0) {
+    return false;
+  }
+
+  packet.challengerName = data.substring(2, p1);
+  packet.chassisId = data.substring(p1 + 1).toInt();
+
+  return true;
+}
+
 uint8_t chassisCodeFromId(const String &chassisId) {
   if (chassisId == "PEST") return 1;
   if (chassisId == "CREEPER") return 2;

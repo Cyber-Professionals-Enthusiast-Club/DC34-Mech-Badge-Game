@@ -9,12 +9,19 @@ static int nearbyCount = 0;
 static unsigned long lastScanMs = 0;
 static const unsigned long SCAN_INTERVAL_MS = 5000;
 static const int MAX_NEARBY_BADGES = 10;
+static CpecAdvertisedPilot localAdvertisedPilot;
+static bool incomingChallengeAvailable = false;
+static CpecChallengePacket incomingChallenge;
 
 void bleSetup(const CpecAdvertisedPilot &pilot) {
+  localAdvertisedPilot = pilot;
+  
   String advName = "C|";
   advName += pilot.chassisId;
   advName += "|";
   advName += pilot.pilotName;
+
+  
 
   NimBLEDevice::init(advName.c_str());
 
@@ -29,7 +36,24 @@ void bleSetup(const CpecAdvertisedPilot &pilot) {
   Serial.println(advName);
 }
 
+void bleAdvertiseChallenge(const CpecAdvertisedPilot &pilot) {
+  String challengeName = encodeChallengePacket(pilot);
+
+  NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+  advertising->stop();
+
+  NimBLEAdvertisementData advData;
+  advData.setName(challengeName.c_str());
+
+  advertising->setAdvertisementData(advData);
+  advertising->start();
+
+  Serial.print("BLE Challenge Advertising: ");
+  Serial.println(challengeName);
+}
+
 void bleLoop() {
+
   if (millis() - lastScanMs < SCAN_INTERVAL_MS) {
     return;
   }
@@ -55,6 +79,17 @@ void bleLoop() {
         Serial.print("BLE seen: ");
         Serial.println(protocolData);
 
+    CpecChallengePacket challenge;
+
+    if (decodeChallengePacket(protocolData, challenge)) {
+    incomingChallenge = challenge;
+    incomingChallengeAvailable = true;
+        Serial.print("BLE seen: ");
+        Serial.println(protocolData);
+    Serial.println("Incoming challenge decoded");
+    continue;
+    }
+
     CpecAdvertisedPilot remotePilot;
 
     if (!decodeCpecAdvertisement(protocolData, remotePilot)) {
@@ -74,6 +109,7 @@ void bleLoop() {
     }
   }
 
+  
   scan->clearResults();
 }
 
@@ -90,4 +126,16 @@ NearbyBadge getNearbyBadge(int index) {
   }
 
   return nearbyBadges[index];
+}
+
+bool bleHasIncomingChallenge() {
+  return incomingChallengeAvailable;
+}
+
+CpecChallengePacket bleGetIncomingChallenge() {
+  return incomingChallenge;
+}
+
+void bleClearIncomingChallenge() {
+  incomingChallengeAvailable = false;
 }

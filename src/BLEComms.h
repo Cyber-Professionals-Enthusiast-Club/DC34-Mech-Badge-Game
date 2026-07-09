@@ -9,6 +9,10 @@ struct NearbyBadge {
 
 void bleSetup(const CpecAdvertisedPilot &pilot);
 void bleLoop();
+void bleAdvertiseChallenge(const CpecAdvertisedPilot &pilot);
+bool bleHasIncomingChallenge();
+CpecChallengePacket bleGetIncomingChallenge();
+void bleClearIncomingChallenge();
 
 int getNearbyBadgeCount();
 NearbyBadge getNearbyBadge(int index);
