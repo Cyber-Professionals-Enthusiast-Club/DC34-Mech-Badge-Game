@@ -251,6 +251,17 @@ bleLoop();
   currentState = STATE_INCOMING_CHALLENGE;
 }
 
+if (bleHasIncomingAccept() && currentState == STATE_CHALLENGE_SENT) {
+  CpecAcceptPacket accept = bleGetIncomingAccept();
+
+  Serial.print("Challenge accepted by: ");
+  Serial.println(accept.accepterName);
+
+  bleClearIncomingAccept();
+
+  currentState = STATE_MULTIPLAYER_BATTLE;
+}
+
 }
 
 //================HANDLER FUNCTIONS
@@ -439,12 +450,19 @@ void handleIncomingChallengeScreen() {
   tft.setCursor(20, 210);
   tft.println("B = DECLINE");
 
-  if (digitalRead(BTN_A) == LOW) {
-    hasIncomingChallenge = false;
-    currentState = STATE_MULTIPLAYER_BATTLE;
-    delay(180);
-    return;
-  }
+if (digitalRead(BTN_A) == LOW) {
+  CpecAdvertisedPilot acceptPilot;
+  acceptPilot.pilotName = pilot.pilotName;
+  acceptPilot.chassisId = chassisCodeFromId(playerMech.badge.chassisId);
+
+  bleAdvertiseAccept(acceptPilot);
+
+  hasIncomingChallenge = false;
+  currentState = STATE_MULTIPLAYER_BATTLE;
+
+  delay(180);
+  return;
+}
 
   if (digitalRead(BTN_B) == LOW) {
     hasIncomingChallenge = false;
