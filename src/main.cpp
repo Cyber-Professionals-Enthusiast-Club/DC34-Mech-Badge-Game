@@ -87,6 +87,8 @@ void handlePlayerNameScreen();
 void handlePlayerFactionScreen();
 void handleRadarScreen();
 void handleChallengeSentScreen();
+void handleIncomingChallengeScreen();
+void handleMultiplayerBattleScreen();
 
 //------Helpers
 void returnToMainMenu() {
@@ -223,6 +225,14 @@ bleLoop();
 
     case STATE_CHALLENGE_SENT:
       handleChallengeSentScreen();
+      break;
+
+    case STATE_INCOMING_CHALLENGE:
+      handleIncomingChallengeScreen();
+      break;
+
+    case STATE_MULTIPLAYER_BATTLE:
+      handleMultiplayerBattleScreen();
       break;
   }
 }
@@ -385,6 +395,62 @@ if (digitalRead(BTN_A) == LOW) {
   if (digitalRead(BTN_B) == LOW) {
     returnToMainMenu();
     delay(180);
+  }
+}
+
+void handleIncomingChallengeScreen() {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.setCursor(20, 20);
+  tft.println("INCOMING");
+
+  tft.setCursor(20, 50);
+  tft.println("CHALLENGE");
+
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(1);
+  tft.setCursor(20, 100);
+  tft.println("A = ACCEPT");
+  tft.setCursor(20, 120);
+  tft.println("B = DECLINE");
+
+  if (digitalRead(BTN_A) == LOW) {
+    currentState = STATE_MULTIPLAYER_BATTLE;
+    delay(180);
+    return;
+  }
+
+  if (digitalRead(BTN_B) == LOW) {
+    currentState = STATE_RADAR;
+    drawRadarScreen(selectedRadarIndex);
+    delay(180);
+    return;
+  }
+}
+
+void handleMultiplayerBattleScreen() {
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(2);
+  tft.setCursor(20, 20);
+  tft.println("MULTIPLAYER");
+
+  tft.setCursor(20, 50);
+  tft.println("BATTLE");
+
+  tft.setTextSize(1);
+  tft.setCursor(20, 100);
+  tft.println("Battle sync soon");
+
+  tft.setCursor(20, 220);
+  tft.println("B = BACK");
+
+  if (digitalRead(BTN_B) == LOW) {
+    currentState = STATE_RADAR;
+    drawRadarScreen(selectedRadarIndex);
+    delay(180);
+    return;
   }
 }
 
@@ -622,6 +688,13 @@ void handleChallengeSentScreen() {
 
   tft.setCursor(20,220);
   tft.println("B = Cancel");
+
+  if (digitalRead(BTN_A) == LOW) {
+    
+      currentState = STATE_MULTIPLAYER_BATTLE;
+      delay(180);
+      return;
+  }
 
   if (digitalRead(BTN_B) == LOW) {
 
