@@ -16,3 +16,8 @@ void bleClearIncomingChallenge();
 
 int getNearbyBadgeCount();
 NearbyBadge getNearbyBadge(int index);
+
+void bleAdvertiseAccept(const CpecAdvertisedPilot &pilot);
+bool bleHasIncomingAccept();
+CpecAcceptPacket bleGetIncomingAccept();
+void bleClearIncomingAccept();

@@ -12,6 +12,8 @@ static const int MAX_NEARBY_BADGES = 10;
 static CpecAdvertisedPilot localAdvertisedPilot;
 static bool incomingChallengeAvailable = false;
 static CpecChallengePacket incomingChallenge;
+static bool incomingAcceptAvailable = false;
+static CpecAcceptPacket incomingAccept;
 
 void bleSetup(const CpecAdvertisedPilot &pilot) {
   localAdvertisedPilot = pilot;
@@ -52,6 +54,22 @@ void bleAdvertiseChallenge(const CpecAdvertisedPilot &pilot) {
   Serial.println(challengeName);
 }
 
+void bleAdvertiseAccept(const CpecAdvertisedPilot &pilot) {
+  String acceptName = encodeAcceptPacket(pilot);
+
+  NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+  advertising->stop();
+
+  NimBLEAdvertisementData advData;
+  advData.setName(acceptName.c_str());
+
+  advertising->setAdvertisementData(advData);
+  advertising->start();
+
+  Serial.print("BLE Accept Advertising: ");
+  Serial.println(acceptName);
+}
+
 void bleLoop() {
 
   if (millis() - lastScanMs < SCAN_INTERVAL_MS) {
@@ -80,13 +98,20 @@ void bleLoop() {
         Serial.println(protocolData);
 
     CpecChallengePacket challenge;
-
     if (decodeChallengePacket(protocolData, challenge)) {
     incomingChallenge = challenge;
     incomingChallengeAvailable = true;
         Serial.print("BLE seen: ");
         Serial.println(protocolData);
     Serial.println("Incoming challenge decoded");
+    continue;
+    }
+    
+    CpecAcceptPacket accept;
+    if (decodeAcceptPacket(protocolData, accept)) {
+    incomingAccept = accept;
+    incomingAcceptAvailable = true;
+    Serial.println("Incoming accept decoded");
     continue;
     }
 
@@ -138,4 +163,16 @@ CpecChallengePacket bleGetIncomingChallenge() {
 
 void bleClearIncomingChallenge() {
   incomingChallengeAvailable = false;
+}
+
+bool bleHasIncomingAccept() {
+  return incomingAcceptAvailable;
+}
+
+CpecAcceptPacket bleGetIncomingAccept() {
+  return incomingAccept;
+}
+
+void bleClearIncomingAccept() {
+  incomingAcceptAvailable = false;
 }

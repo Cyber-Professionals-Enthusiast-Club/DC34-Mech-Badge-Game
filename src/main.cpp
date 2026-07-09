@@ -716,6 +716,7 @@ void handleChallengeSentScreen() {
   tft.println("B = Cancel");
 
 if (digitalRead(BTN_A) == LOW) {
+  Serial.println("A PRESSED ON CHALLENGE SENT");
   CpecAdvertisedPilot challengePilot;
   challengePilot.pilotName = pilot.pilotName;
   challengePilot.chassisId = chassisCodeFromId(playerMech.badge.chassisId);
@@ -725,6 +726,7 @@ if (digitalRead(BTN_A) == LOW) {
   delay(180);
   return;
 }
+
   if (digitalRead(BTN_B) == LOW) {
 
       currentState = STATE_RADAR;

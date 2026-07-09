@@ -106,3 +106,28 @@ String chassisNameFromCode(uint8_t code) {
     default: return "Unknown";
   }
 }
+
+String encodeAcceptPacket(const CpecAdvertisedPilot &pilot) {
+  String out = "A|";
+  out += pilot.pilotName;
+  out += "|";
+  out += pilot.chassisId;
+  return out;
+}
+
+bool decodeAcceptPacket(const String &data, CpecAcceptPacket &packet) {
+  if (!data.startsWith("A|")) {
+    return false;
+  }
+
+  int p1 = data.indexOf('|', 2);
+
+  if (p1 < 0) {
+    return false;
+  }
+
+  packet.accepterName = data.substring(2, p1);
+  packet.chassisId = data.substring(p1 + 1).toInt();
+
+  return true;
+}

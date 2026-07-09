@@ -27,3 +27,11 @@ struct CpecChallengePacket {
 
 String encodeChallengePacket(const CpecAdvertisedPilot &pilot);
 bool decodeChallengePacket(const String &data, CpecChallengePacket &packet);
+
+struct CpecAcceptPacket {
+  String accepterName;
+  uint8_t chassisId = 0;
+};
+
+String encodeAcceptPacket(const CpecAdvertisedPilot &pilot);
+bool decodeAcceptPacket(const String &data, CpecAcceptPacket &packet);
