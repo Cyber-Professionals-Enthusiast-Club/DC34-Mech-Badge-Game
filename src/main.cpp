@@ -31,6 +31,9 @@ int selectedNameChar = 0;
 
 int selectedRadarIndex = 0;
 
+String incomingChallengerName = "";
+String incomingChallengerChassis = "";
+bool hasIncomingChallenge = false;
 
 const char* FACTIONS[] = {
   "BoomCorp LLC",
@@ -400,28 +403,38 @@ if (digitalRead(BTN_A) == LOW) {
 
 void handleIncomingChallengeScreen() {
   tft.fillScreen(ST77XX_BLACK);
+
   tft.setTextColor(ST77XX_YELLOW);
   tft.setTextSize(2);
   tft.setCursor(20, 20);
   tft.println("INCOMING");
-
   tft.setCursor(20, 50);
   tft.println("CHALLENGE");
 
   tft.setTextColor(ST77XX_GREEN);
   tft.setTextSize(1);
-  tft.setCursor(20, 100);
+  tft.setCursor(20, 95);
+  tft.print("FROM: ");
+  tft.println(incomingChallengerName);
+
+  tft.setCursor(20, 115);
+  tft.print("MECH: ");
+  tft.println(incomingChallengerChassis);
+
+  tft.setCursor(20, 190);
   tft.println("A = ACCEPT");
-  tft.setCursor(20, 120);
+  tft.setCursor(20, 210);
   tft.println("B = DECLINE");
 
   if (digitalRead(BTN_A) == LOW) {
+    hasIncomingChallenge = false;
     currentState = STATE_MULTIPLAYER_BATTLE;
     delay(180);
     return;
   }
 
   if (digitalRead(BTN_B) == LOW) {
+    hasIncomingChallenge = false;
     currentState = STATE_RADAR;
     drawRadarScreen(selectedRadarIndex);
     delay(180);
@@ -689,12 +702,14 @@ void handleChallengeSentScreen() {
   tft.setCursor(20,220);
   tft.println("B = Cancel");
 
-  if (digitalRead(BTN_A) == LOW) {
-    
-      currentState = STATE_MULTIPLAYER_BATTLE;
-      delay(180);
-      return;
-  }
+if (digitalRead(BTN_A) == LOW) {
+  incomingChallengerName = "TEST PILOT";
+  incomingChallengerChassis = "Pathfinder";
+  hasIncomingChallenge = true;
+  currentState = STATE_INCOMING_CHALLENGE;
+  delay(180);
+  return;
+}
 
   if (digitalRead(BTN_B) == LOW) {
 
