@@ -16,3 +16,4 @@ extern Adafruit_ST7789 tft;
 
 void badgeSetup();
 void badgeLoop();
+void showBootSequence();

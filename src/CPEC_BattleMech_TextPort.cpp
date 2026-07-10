@@ -845,8 +845,32 @@ void badgeSetup() {
   tft.setSPISpeed(8000000L);   // start conservative
   tft.setRotation(1);
 
+tft.fillScreen(ST77XX_BLACK);
+
+}
+
+void badgeLoop() {
+  ButtonEvent ev = readButtonEvent();
+  handleEvent(ev);
+  delay(5);
+}
+
+void showBootSequence() {
+  // -------------------------
+  // Stage 1: Mech image
+  // -------------------------
   tft.fillScreen(ST77XX_BLACK);
 
+  // Replace this with the function you already use
+  // to draw the mech image from LittleFS.
+  showBootScreen();
+
+  delay(1800);
+
+  // -------------------------
+  // Stage 2: Title screen
+  // -------------------------
+tft.fillScreen(ST77XX_BLACK);
 tft.setTextColor(ST77XX_GREEN);
 tft.setTextSize(2);
 tft.setCursor(20, 80);
@@ -856,11 +880,46 @@ tft.setTextColor(ST77XX_CYAN);
 tft.setCursor(45, 115);
 tft.println("TEXT PORT v0.69 (nice)");
 
-delay(1200);
-}
+tft.setTextColor(ST77XX_GREEN);
+tft.setCursor(45, 135);
+tft.println("  ");
 
-void badgeLoop() {
-  ButtonEvent ev = readButtonEvent();
-  handleEvent(ev);
-  delay(5);
+delay(1200);
+
+  delay(1800);
+
+  // -------------------------
+  // Stage 3: SAO disclaimer
+  // -------------------------
+  tft.fillScreen(ST77XX_BLACK);
+
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.setCursor(20, 20);
+  tft.println("SAO WARNING");
+
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(1);
+
+  tft.setCursor(20, 65);
+  tft.println("Badge has been tested with CPEC SAOs. Most ");
+  tft.setCursor(20, 80);
+  tft.println(" third-party SAOs will work fine, but SAOs");
+
+  tft.setCursor(20, 110);
+  tft.println(" with advanced features or inter-board");
+  tft.setCursor(20, 125);
+  tft.println(" communication may overheat. Exercise caution ");
+  tft.setCursor(20, 140);
+  tft.println("when plugging in third party SAOs.");
+  tft.setTextColor(ST77XX_RED);
+  tft.setCursor(20, 165);
+  tft.println("CPEC assumes no liability for 3rd party hardware.");
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setCursor(20, 190);
+  tft.println(" ");
+  tft.setCursor(20, 205);
+  tft.println("2026 Mech Fighters Badge - By CPEC for DEFCON 34");
+
+  delay(3000);
 }

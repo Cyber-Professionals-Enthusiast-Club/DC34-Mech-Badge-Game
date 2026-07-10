@@ -21,3 +21,9 @@ void bleAdvertiseAccept(const CpecAdvertisedPilot &pilot);
 bool bleHasIncomingAccept();
 CpecAcceptPacket bleGetIncomingAccept();
 void bleClearIncomingAccept();
+
+void bleAdvertiseTurn(int round, int weaponSlot);
+
+bool bleHasIncomingTurn();
+CpecTurnPacket bleGetIncomingTurn();
+void bleClearIncomingTurn();

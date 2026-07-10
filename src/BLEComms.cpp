@@ -14,6 +14,8 @@ static bool incomingChallengeAvailable = false;
 static CpecChallengePacket incomingChallenge;
 static bool incomingAcceptAvailable = false;
 static CpecAcceptPacket incomingAccept;
+static bool incomingTurnAvailable = false;
+static CpecTurnPacket incomingTurn;
 
 void bleSetup(const CpecAdvertisedPilot &pilot) {
   localAdvertisedPilot = pilot;
@@ -70,6 +72,22 @@ void bleAdvertiseAccept(const CpecAdvertisedPilot &pilot) {
   Serial.println(acceptName);
 }
 
+void bleAdvertiseTurn(int round, int weaponSlot) {
+  String turnName = encodeTurnPacket(round, weaponSlot);
+
+  NimBLEAdvertising *advertising = NimBLEDevice::getAdvertising();
+  advertising->stop();
+
+  NimBLEAdvertisementData advData;
+  advData.setName(turnName.c_str());
+
+  advertising->setAdvertisementData(advData);
+  advertising->start();
+
+  Serial.print("BLE Turn Advertising: ");
+  Serial.println(turnName);
+}
+
 void bleLoop() {
 
   if (millis() - lastScanMs < SCAN_INTERVAL_MS) {
@@ -112,6 +130,20 @@ void bleLoop() {
     incomingAccept = accept;
     incomingAcceptAvailable = true;
     Serial.println("Incoming accept decoded");
+    continue;
+    }
+
+    CpecTurnPacket turn;
+
+    if (decodeTurnPacket(protocolData, turn)) {
+    incomingTurn = turn;
+    incomingTurnAvailable = true;
+
+    Serial.print("Incoming turn decoded: round ");
+    Serial.print(turn.round);
+    Serial.print(", weapon ");
+    Serial.println(turn.weaponSlot);
+
     continue;
     }
 
@@ -175,4 +207,16 @@ CpecAcceptPacket bleGetIncomingAccept() {
 
 void bleClearIncomingAccept() {
   incomingAcceptAvailable = false;
+}
+
+bool bleHasIncomingTurn() {
+  return incomingTurnAvailable;
+}
+
+CpecTurnPacket bleGetIncomingTurn() {
+  return incomingTurn;
+}
+
+void bleClearIncomingTurn() {
+  incomingTurnAvailable = false;
 }

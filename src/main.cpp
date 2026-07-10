@@ -14,6 +14,7 @@
 #include "BLEComms.h"
 #include "RadarUI.h"
 #include "WirelessProtocol.h"
+#include "BattleEngine.h"
 
 //ENUMS
 
@@ -58,6 +59,10 @@ bool matchWon = false;
 char nameBuffer[9] = "        ";
 int nameCursor;
 int selectedFactionIndex;
+
+int selectedBattleWeaponIndex = 0;
+
+bool challengeAdvertisementStarted = false;
 
 String battleMessage = "Awaiting command...";
 
@@ -114,9 +119,6 @@ void setup() {
     return;
   }
   
-
-  //TEST THIS-----------------------
-  // LittleFS.remove("/pilot_profile.json");
 
   BadgeConfig badge;
   std::vector<ChassisProfile> chassisProfiles;
@@ -175,7 +177,8 @@ if (!buildActiveMech(playerMech, pilot, badge, activeChassis, weaponProfiles)) {
     bleSetup(advertisedPilot);
 
   badgeSetup();
-  // bleDuelSetup();
+  showBootSequence();
+
   drawMainMenu(selectedMenuIndex);
 }
 
@@ -239,16 +242,25 @@ bleLoop();
       break;
   }
 
-  if (bleHasIncomingChallenge() && currentState != STATE_CHALLENGE_SENT) {
+if (bleHasIncomingChallenge()) {
   CpecChallengePacket challenge = bleGetIncomingChallenge();
 
-  incomingChallengerName = challenge.challengerName;
-  incomingChallengerChassis = chassisNameFromCode(challenge.chassisId);
-  hasIncomingChallenge = true;
+  // Only allow a new challenge while browsing RADAR.
+  if (currentState == STATE_RADAR) {
+    incomingChallengerName = challenge.challengerName;
+    incomingChallengerChassis =
+        chassisNameFromCode(challenge.chassisId);
 
+    hasIncomingChallenge = true;
+    currentState = STATE_INCOMING_CHALLENGE;
+
+    Serial.println("Challenge accepted by state gate: entering incoming screen");
+  } else {
+    Serial.println("Challenge packet ignored: badge is not in RADAR");
+  }
+
+  // Consume it regardless of current state.
   bleClearIncomingChallenge();
-
-  currentState = STATE_INCOMING_CHALLENGE;
 }
 
 if (bleHasIncomingAccept() && currentState == STATE_CHALLENGE_SENT) {
@@ -260,6 +272,24 @@ if (bleHasIncomingAccept() && currentState == STATE_CHALLENGE_SENT) {
   bleClearIncomingAccept();
 
   currentState = STATE_MULTIPLAYER_BATTLE;
+}
+
+if (bleHasIncomingTurn() &&
+    currentState == STATE_MULTIPLAYER_BATTLE) {
+
+  CpecTurnPacket turnPacket = bleGetIncomingTurn();
+
+  if (turnPacket.round == getBattleRound()) {
+    submitRemoteTurn(turnPacket.weaponSlot);
+
+    Serial.print("Remote weapon received: ");
+    Serial.println(turnPacket.weaponSlot);
+  } else {
+    Serial.print("Ignored turn for round ");
+    Serial.println(turnPacket.round);
+  }
+
+  bleClearIncomingTurn();
 }
 
 }
@@ -320,7 +350,7 @@ void handleRadarScreen() {
 
   if (digitalRead(BTN_A) == LOW && count > 0) {
     NearbyBadge badge = getNearbyBadge(selectedRadarIndex);
-
+    challengeAdvertisementStarted = false;
     currentState = STATE_CHALLENGE_SENT;
       delay(180);
       return;
@@ -451,13 +481,16 @@ void handleIncomingChallengeScreen() {
   tft.println("B = DECLINE");
 
 if (digitalRead(BTN_A) == LOW) {
+
   CpecAdvertisedPilot acceptPilot;
   acceptPilot.pilotName = pilot.pilotName;
   acceptPilot.chassisId = chassisCodeFromId(playerMech.badge.chassisId);
 
   bleAdvertiseAccept(acceptPilot);
 
+  bleClearIncomingChallenge();
   hasIncomingChallenge = false;
+
   currentState = STATE_MULTIPLAYER_BATTLE;
 
   delay(180);
@@ -474,25 +507,114 @@ if (digitalRead(BTN_A) == LOW) {
 }
 
 void handleMultiplayerBattleScreen() {
+
+  static bool announcedBattleState = false;
+
+  if (!announcedBattleState) {
+  Serial.println("*** ENTERED MULTIPLAYER BATTLE ***");
+  announcedBattleState = true;
+}
+
+  int weaponCount = playerMech.weapons.size();
+
+  if (weaponCount == 0) {
+    tft.fillScreen(ST77XX_BLACK);
+    tft.setTextColor(ST77XX_RED);
+    tft.setTextSize(2);
+    tft.setCursor(20, 20);
+    tft.println("NO WEAPONS");
+    return;
+  }
+
+  if (selectedBattleWeaponIndex < 0) {
+    selectedBattleWeaponIndex = weaponCount - 1;
+  }
+
+  if (selectedBattleWeaponIndex >= weaponCount) {
+    selectedBattleWeaponIndex = 0;
+  }
+
   tft.fillScreen(ST77XX_BLACK);
+
   tft.setTextColor(ST77XX_GREEN);
   tft.setTextSize(2);
-  tft.setCursor(20, 20);
-  tft.println("MULTIPLAYER");
-
-  tft.setCursor(20, 50);
-  tft.println("BATTLE");
+  tft.setCursor(20, 15);
+  tft.print("ROUND ");
+  tft.println(getBattleRound());
 
   tft.setTextSize(1);
-  tft.setCursor(20, 100);
-  tft.println("Battle sync soon");
 
-  tft.setCursor(20, 220);
-  tft.println("B = BACK");
+  for (int i = 0; i < weaponCount && i < 6; i++) {
+    int y = 55 + (i * 22);
+
+    tft.setCursor(20, y);
+
+    if (i == selectedBattleWeaponIndex) {
+      tft.setTextColor(ST77XX_YELLOW);
+      tft.print("> ");
+    } else {
+      tft.setTextColor(ST77XX_GREEN);
+      tft.print("  ");
+    }
+
+    tft.println(playerMech.weapons[i].weapon.displayName);
+  }
+
+  const BattleTurn &turn = getBattleTurn();
+
+if (battleTurnReady()) {
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setCursor(20, 185);
+  tft.println("RESOLVING TURN...");
+
+  delay(500);
+
+  resolveBattleTurn();
+
+  Serial.println("Turn resolved");
+  return;
+}
+
+  tft.setTextColor(ST77XX_CYAN);
+  tft.setCursor(20, 205);
+
+  if (turn.localSubmitted) {
+    tft.println("CHOICE LOCKED");
+  } else {
+    tft.println("UP/DOWN SELECT  A=LOCK");
+  }
+
+  if (!turn.localSubmitted && digitalRead(BTN_UP) == LOW) {
+    selectedBattleWeaponIndex--;
+    delay(180);
+    return;
+  }
+
+  if (!turn.localSubmitted && digitalRead(BTN_DOWN) == LOW) {
+    selectedBattleWeaponIndex++;
+    delay(180);
+    return;
+  }
+
+  if (!turn.localSubmitted && digitalRead(BTN_A) == LOW) {
+    submitLocalTurn(selectedBattleWeaponIndex);
+
+    bleAdvertiseTurn(
+        getBattleRound(),
+        selectedBattleWeaponIndex
+    );
+
+    Serial.print("Local weapon selected: ");
+    Serial.println(selectedBattleWeaponIndex);
+
+    delay(180);
+    return;
+  }
 
   if (digitalRead(BTN_B) == LOW) {
     currentState = STATE_RADAR;
     drawRadarScreen(selectedRadarIndex);
+    announcedBattleState = false;
     delay(180);
     return;
   }
@@ -713,9 +835,19 @@ void handlePlayerFactionScreen() {
 }
 
 void handleChallengeSentScreen() {
+if (!challengeAdvertisementStarted) {
+  CpecAdvertisedPilot challengePilot;
+  challengePilot.pilotName = pilot.pilotName;
+  challengePilot.chassisId =
+      chassisCodeFromId(playerMech.badge.chassisId);
+
+  Serial.println("Starting challenge advertisement");
+  bleAdvertiseChallenge(challengePilot);
+
+  challengeAdvertisementStarted = true;
+}
 
   tft.fillScreen(ST77XX_BLACK);
-
   tft.setTextColor(ST77XX_GREEN);
 
   tft.setTextSize(2);
@@ -746,9 +878,10 @@ if (digitalRead(BTN_A) == LOW) {
 }
 
   if (digitalRead(BTN_B) == LOW) {
-
+      challengeAdvertisementStarted = false;
       currentState = STATE_RADAR;
       drawRadarScreen(selectedRadarIndex);
       delay(180);
+      return;
   }
 }

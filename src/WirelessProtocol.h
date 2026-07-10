@@ -25,6 +25,14 @@ struct CpecChallengePacket {
   uint8_t chassisId = 0;
 };
 
+struct CpecTurnPacket {
+  int round = 0;
+  int weaponSlot = -1;
+};
+
+String encodeTurnPacket(int round, int weaponSlot);
+bool decodeTurnPacket(const String &data, CpecTurnPacket &packet);
+
 String encodeChallengePacket(const CpecAdvertisedPilot &pilot);
 bool decodeChallengePacket(const String &data, CpecChallengePacket &packet);
 

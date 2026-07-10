@@ -131,3 +131,29 @@ bool decodeAcceptPacket(const String &data, CpecAcceptPacket &packet) {
 
   return true;
 }
+
+String encodeTurnPacket(int round, int weaponSlot) {
+  String out = "T|";
+  out += round;
+  out += "|";
+  out += weaponSlot;
+
+  return out;
+}
+
+bool decodeTurnPacket(const String &data, CpecTurnPacket &packet) {
+  if (!data.startsWith("T|")) {
+    return false;
+  }
+
+  int separator = data.indexOf('|', 2);
+
+  if (separator < 0) {
+    return false;
+  }
+
+  packet.round = data.substring(2, separator).toInt();
+  packet.weaponSlot = data.substring(separator + 1).toInt();
+
+  return true;
+}
