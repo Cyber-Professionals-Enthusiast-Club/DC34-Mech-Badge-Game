@@ -30,6 +30,16 @@ struct CpecTurnPacket {
   int weaponSlot = -1;
 };
 
+struct CpecReadyPacket {
+  int nextRound = 0;
+};
+
+String encodeReadyPacket(int nextRound);
+bool decodeReadyPacket(
+    const String &data,
+    CpecReadyPacket &packet
+);
+
 String encodeTurnPacket(int round, int weaponSlot);
 bool decodeTurnPacket(const String &data, CpecTurnPacket &packet);
 

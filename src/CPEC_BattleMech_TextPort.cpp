@@ -30,6 +30,7 @@
 #include "BadgeDisplay.h"
 
 // ===================== HARDWARE CONFIG =====================
+//Graphical
 #define TFT_SCLK 36
 #define TFT_MOSI 35
 #define TFT_DC   26
@@ -37,6 +38,7 @@
 #define TFT_RST  21
 #define TFT_BL   47
 
+//Input
 #define BTN_UP      7
 #define BTN_DOWN    10
 #define BTN_LEFT    8
@@ -45,6 +47,9 @@
 #define BTN_START   2
 #define BTN_A       11
 #define BTN_B       14
+
+//Audio
+#define BUZZER_PIN  33
 
 // Adafruit_ST7789 tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
@@ -847,6 +852,9 @@ void badgeSetup() {
 
 tft.fillScreen(ST77XX_BLACK);
 
+pinMode(BUZZER_PIN, OUTPUT);
+digitalWrite(BUZZER_PIN, LOW);
+
 }
 
 void badgeLoop() {
@@ -904,12 +912,12 @@ delay(1200);
   tft.setCursor(20, 65);
   tft.println("Badge has been tested with CPEC SAOs. Most ");
   tft.setCursor(20, 80);
-  tft.println(" third-party SAOs will work fine, but SAOs");
+  tft.println("third-party SAOs will work fine, but SAOs");
 
   tft.setCursor(20, 110);
-  tft.println(" with advanced features or inter-board");
+  tft.println("with advanced features or inter-board");
   tft.setCursor(20, 125);
-  tft.println(" communication may overheat. Exercise caution ");
+  tft.println("communication may overheat. Exercise caution ");
   tft.setCursor(20, 140);
   tft.println("when plugging in third party SAOs.");
   tft.setTextColor(ST77XX_RED);

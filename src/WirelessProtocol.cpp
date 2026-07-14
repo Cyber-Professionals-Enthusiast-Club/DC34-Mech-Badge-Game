@@ -157,3 +157,22 @@ bool decodeTurnPacket(const String &data, CpecTurnPacket &packet) {
 
   return true;
 }
+
+String encodeReadyPacket(int nextRound) {
+  String out = "R|";
+  out += nextRound;
+  return out;
+}
+
+bool decodeReadyPacket(
+    const String &data,
+    CpecReadyPacket &packet
+) {
+  if (!data.startsWith("R|")) {
+    return false;
+  }
+
+  packet.nextRound = data.substring(2).toInt();
+
+  return packet.nextRound > 0;
+}

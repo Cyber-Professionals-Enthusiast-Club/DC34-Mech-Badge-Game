@@ -13,6 +13,7 @@ extern Adafruit_ST7789 tft;
 #define BTN_START   2
 #define BTN_A       11
 #define BTN_B       14
+#define BUZZER_PIN  33
 
 void badgeSetup();
 void badgeLoop();

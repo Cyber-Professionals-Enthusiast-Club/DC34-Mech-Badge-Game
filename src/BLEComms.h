@@ -27,3 +27,9 @@ void bleAdvertiseTurn(int round, int weaponSlot);
 bool bleHasIncomingTurn();
 CpecTurnPacket bleGetIncomingTurn();
 void bleClearIncomingTurn();
+
+void bleAdvertiseReady(int nextRound);
+
+bool bleHasIncomingReady();
+CpecReadyPacket bleGetIncomingReady();
+void bleClearIncomingReady();

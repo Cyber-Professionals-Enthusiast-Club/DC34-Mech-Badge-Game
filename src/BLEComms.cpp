@@ -16,6 +16,8 @@ static bool incomingAcceptAvailable = false;
 static CpecAcceptPacket incomingAccept;
 static bool incomingTurnAvailable = false;
 static CpecTurnPacket incomingTurn;
+static bool incomingReadyAvailable = false;
+static CpecReadyPacket incomingReady;
 
 void bleSetup(const CpecAdvertisedPilot &pilot) {
   localAdvertisedPilot = pilot;
@@ -88,6 +90,24 @@ void bleAdvertiseTurn(int round, int weaponSlot) {
   Serial.println(turnName);
 }
 
+void bleAdvertiseReady(int nextRound) {
+  String readyName = encodeReadyPacket(nextRound);
+
+  NimBLEAdvertising *advertising =
+      NimBLEDevice::getAdvertising();
+
+  advertising->stop();
+
+  NimBLEAdvertisementData advData;
+  advData.setName(readyName.c_str());
+
+  advertising->setAdvertisementData(advData);
+  advertising->start();
+
+  Serial.print("BLE Ready Advertising: ");
+  Serial.println(readyName);
+}
+
 void bleLoop() {
 
   if (millis() - lastScanMs < SCAN_INTERVAL_MS) {
@@ -143,6 +163,18 @@ void bleLoop() {
     Serial.print(turn.round);
     Serial.print(", weapon ");
     Serial.println(turn.weaponSlot);
+
+    continue;
+    }
+
+    CpecReadyPacket ready;
+
+    if (decodeReadyPacket(protocolData, ready)) {
+    incomingReady = ready;
+    incomingReadyAvailable = true;
+
+    Serial.print("Incoming ready decoded for round ");
+    Serial.println(ready.nextRound);
 
     continue;
     }
@@ -219,4 +251,16 @@ CpecTurnPacket bleGetIncomingTurn() {
 
 void bleClearIncomingTurn() {
   incomingTurnAvailable = false;
+}
+
+bool bleHasIncomingReady() {
+  return incomingReadyAvailable;
+}
+
+CpecReadyPacket bleGetIncomingReady() {
+  return incomingReady;
+}
+
+void bleClearIncomingReady() {
+  incomingReadyAvailable = false;
 }
