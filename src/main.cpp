@@ -16,6 +16,9 @@
 #include "WirelessProtocol.h"
 #include "BattleEngine.h"
 #include "SoundManager.h"
+#include "MatchResult.h"
+#include "MatchQR.h"
+#include "MatchResult.h"
 
 //ENUMS
 
@@ -29,6 +32,9 @@ DummyMechTarget dummyTarget;
 
 std::vector<ChassisProfile> chassisProfiles;
 std::vector<WeaponProfile> weaponProfiles;
+
+MatchResult completedMatch;
+bool completedMatchAvailable = false;
 
 bool radarTargetLocked = false;
 
@@ -58,9 +64,9 @@ int selectedWeaponIndex = 0;
 int selectedOptionsIndex = 0;
 
 bool inBattleTest = false;
-// bool inOptionsMenu = false;
-// bool inCreditsScreen = false;
 bool matchWon = false;
+
+bool matchResultRecorded = false;
 
 char nameBuffer[9] = "        ";
 int nameCursor;
@@ -112,6 +118,7 @@ void handleMultiplayerBattleScreen();
 void handleBattleResultsScreen();
 void handleBattleVictoryScreen();
 void handleBattleDefeatScreen();
+void handleMatchQrScreen();
 
 //------Helpers
 void returnToMainMenu() {
@@ -421,6 +428,10 @@ bleLoop();
     case STATE_BATTLE_DEFEAT:
       handleBattleDefeatScreen();
       break;
+
+    case STATE_MATCH_QR:
+      handleMatchQrScreen();
+      break;
   }
 
 soundUpdate();
@@ -464,6 +475,7 @@ if (bleHasIncomingAccept() && currentState == STATE_CHALLENGE_SENT) {
   return;
 }
 
+matchResultRecorded = false;
 startMultiplayerBattle(playerMech, remoteMech);
 
   currentState = STATE_MULTIPLAYER_BATTLE;
@@ -666,6 +678,8 @@ if (digitalRead(BTN_A) == LOW) {
 }
 
 void handleIncomingChallengeScreen() {
+  static bool screenDrawn = false;
+  
   tft.fillScreen(ST77XX_BLACK);
 
   tft.setTextColor(ST77XX_YELLOW);
@@ -710,6 +724,7 @@ if (digitalRead(BTN_A) == LOW) {
   return;
 }
 
+matchResultRecorded = false;
 startMultiplayerBattle(playerMech, remoteMech);
 
   currentState = STATE_MULTIPLAYER_BATTLE;
@@ -1115,6 +1130,7 @@ void handlePlayerFactionScreen() {
 }
 
 void handleChallengeSentScreen() {
+  static bool screenDrawn = false;
 if (!challengeAdvertisementStarted) {
   CpecAdvertisedPilot challengePilot;
   challengePilot.pilotName = pilot.pilotName;
@@ -1366,6 +1382,46 @@ void handleBattleResultsScreen() {
 }
 
 void handleBattleVictoryScreen() {
+  if (!matchResultRecorded) {
+  pilot.battles++;
+  pilot.wins++;
+  pilot.kills++;
+
+  savePilotProfile(pilot);
+
+completedMatch.version = 1;
+
+completedMatch.localPilotId = pilot.pilotId;
+completedMatch.localPilotName = pilot.pilotName;
+
+completedMatch.remotePilotId = remoteMech.pilot.pilotId;
+completedMatch.remotePilotName = remoteMech.pilot.pilotName;
+
+completedMatch.result = "W";
+completedMatch.rounds = getBattleRound() - 1;
+
+completedMatch.localChassisId =
+    playerMech.badge.chassisId;
+
+completedMatch.remoteChassisId =
+    remoteMech.badge.chassisId;
+
+completedMatchAvailable = true;
+
+Serial.print("Match payload: ");
+Serial.println(encodeMatchResult(completedMatch));
+
+  Serial.println("Victory recorded:");
+  Serial.print("Battles: ");
+  Serial.println(pilot.battles);
+  Serial.print("Wins: ");
+  Serial.println(pilot.wins);
+  Serial.print("Kills: ");
+  Serial.println(pilot.kills);
+
+  matchResultRecorded = true;
+}
+
   static bool screenDrawn = false;
 
   if (!screenDrawn) {
@@ -1381,7 +1437,7 @@ void handleBattleVictoryScreen() {
     tft.println("ENEMY MECH DESTROYED");
 
     tft.setCursor(80, 205);
-    tft.println("A = MAIN MENU");
+    tft.println("A = SHOW QR");
 
     screenDrawn = true;
   }
@@ -1392,9 +1448,7 @@ void handleBattleVictoryScreen() {
     }
 
     screenDrawn = false;
-    currentState = STATE_MAIN_MENU;
-    selectedMenuIndex = 0;
-    drawMainMenu(selectedMenuIndex);
+    currentState = STATE_MATCH_QR;
 
     delay(50);
     return;
@@ -1402,6 +1456,38 @@ void handleBattleVictoryScreen() {
 }
 
 void handleBattleDefeatScreen() {
+if (!matchResultRecorded) {
+  pilot.battles++;
+  pilot.losses++;
+  pilot.deaths++;
+
+  savePilotProfile(pilot);
+
+  completedMatch.version = 1;
+
+  completedMatch.localPilotId = pilot.pilotId;
+  completedMatch.localPilotName = pilot.pilotName;
+
+  completedMatch.remotePilotId = remoteMech.pilot.pilotId;
+  completedMatch.remotePilotName = remoteMech.pilot.pilotName;
+
+  completedMatch.result = "L";
+  completedMatch.rounds = getBattleRound() - 1;
+
+  completedMatch.localChassisId =
+      playerMech.badge.chassisId;
+
+  completedMatch.remoteChassisId =
+      remoteMech.badge.chassisId;
+
+  completedMatchAvailable = true;
+
+  Serial.print("Match payload: ");
+  Serial.println(encodeMatchResult(completedMatch));
+
+  matchResultRecorded = true;
+}
+
   static bool screenDrawn = false;
 
   if (!screenDrawn) {
@@ -1417,7 +1503,7 @@ void handleBattleDefeatScreen() {
     tft.println("YOUR MECH WAS DESTROYED");
 
     tft.setCursor(80, 205);
-    tft.println("A = MAIN MENU");
+    tft.println("A = SHOW QR");
 
     screenDrawn = true;
   }
@@ -1428,9 +1514,7 @@ void handleBattleDefeatScreen() {
     }
 
     screenDrawn = false;
-    currentState = STATE_MAIN_MENU;
-    selectedMenuIndex = 0;
-    drawMainMenu(selectedMenuIndex);
+    currentState = STATE_MATCH_QR;
 
     delay(50);
     return;
@@ -1459,3 +1543,52 @@ void playWeaponSound(const String& weaponName)
     }
 }
 
+void handleMatchQrScreen() {
+  static bool screenDrawn = false;
+
+  if (!screenDrawn) {
+    if (!completedMatchAvailable) {
+      tft.fillScreen(ST77XX_BLACK);
+      tft.setTextColor(ST77XX_RED);
+      tft.setTextSize(2);
+      tft.setCursor(20, 40);
+      tft.println("NO MATCH DATA");
+
+      tft.setTextSize(1);
+      tft.setCursor(20, 210);
+      tft.println("B = MAIN MENU");
+    } else {
+      String payload =
+          encodeMatchResult(completedMatch);
+
+      Serial.print("Drawing QR payload: ");
+      Serial.println(payload);
+
+      drawMatchQr(tft, payload);
+
+      // Keep this clear of the QR itself.
+      tft.setTextColor(ST77XX_BLACK);
+      tft.setTextSize(1);
+      tft.setCursor(10, 225);
+      tft.println("B = MAIN MENU");
+    }
+
+    screenDrawn = true;
+  }
+
+  if (digitalRead(BTN_B) == LOW) {
+    while (digitalRead(BTN_B) == LOW) {
+      delay(10);
+    }
+
+    screenDrawn = false;
+    completedMatchAvailable = false;
+
+    currentState = STATE_MAIN_MENU;
+    selectedMenuIndex = 0;
+    drawMainMenu(selectedMenuIndex);
+
+    delay(50);
+    return;
+  }
+}

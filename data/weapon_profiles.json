@@ -4,6 +4,28 @@
   "profile_type": "weapon_profiles",
   "weapons": [
     {
+      "id": "PUNCH",
+      "display_name": "Punch",
+      "category": "melee",
+      "source": "base",
+      "damage": 5,
+      "heat": 0,
+      "accuracy_modifier": 1,
+      "range": "short",
+      "ammo": 6
+    },
+    {
+      "id": "VIBRO_KATANA",
+      "display_name": "Vibro-Katana",
+      "category": "melee",
+      "source": "sao",
+      "damage": 5,
+      "heat": 0,
+      "accuracy_modifier": 1,
+      "range": "short",
+      "ammo": 6
+    },
+    {
       "id": "TWIN_MACHINE_GUN",
       "display_name": "Twin Machine Gun",
       "category": "ballistic",

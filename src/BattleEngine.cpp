@@ -5,6 +5,7 @@ static ActiveMech *localBattleMech = nullptr;
 static ActiveMech *remoteBattleMech = nullptr;
 
 static BattleTurn currentTurn;
+static BattleRange currentBattleRange = RANGE_MEDIUM;
 static BattleRoundResult lastBattleResult;
 
 static int calculateTargetNumber() {
@@ -56,19 +57,31 @@ void startMultiplayerBattle(
   currentTurn.round = 1;
   currentTurn.localWeaponSlot = -1;
   currentTurn.remoteWeaponSlot = -1;
+  currentTurn.localMovement = MOVE_HOLD;
+  currentTurn.remoteMovement = MOVE_HOLD;
   currentTurn.localSubmitted = false;
   currentTurn.remoteSubmitted = false;
+
+  currentBattleRange = RANGE_MEDIUM;
 
   lastBattleResult = BattleRoundResult();
 }
 
-void submitLocalTurn(int weaponSlot) {
+void submitLocalTurn(
+    int weaponSlot,
+    MovementChoice movement
+) {
   currentTurn.localWeaponSlot = weaponSlot;
+  currentTurn.localMovement = movement;
   currentTurn.localSubmitted = true;
 }
 
-void submitRemoteTurn(int weaponSlot) {
+void submitRemoteTurn(
+    int weaponSlot,
+    MovementChoice movement
+) {
   currentTurn.remoteWeaponSlot = weaponSlot;
+  currentTurn.remoteMovement = movement;
   currentTurn.remoteSubmitted = true;
 }
 
@@ -196,6 +209,34 @@ static void applyWeaponHeat(
   mech.currentHeat += weapon.heat;
 }
 
+static constexpr int BASE_COOLING = 2;
+
+static void addWeaponHeat(
+    ActiveMech &mech,
+    const WeaponProfile &weapon
+) {
+  mech.currentHeat += weapon.heat;
+}
+
+static void coolMech(
+    ActiveMech &mech
+) {
+  mech.currentHeat -= BASE_COOLING;
+
+  if (mech.currentHeat < 0) {
+    mech.currentHeat = 0;
+  }
+}
+
+static void updateShutdownState(
+    ActiveMech &mech
+) {
+  if (mech.currentHeat >= mech.chassis.heatCapacity) {
+    mech.shutdown = true;
+    mech.shutdownTurnsRemaining = 1;
+  }
+}
+
 void resolveBattleTurn() {
   if (!battleTurnReady()) {
     return;
@@ -244,7 +285,13 @@ void resolveBattleTurn() {
         localBattleMech
             ->weapons[localWeaponSlot]
             .weapon;
-    
+    addWeaponHeat(
+        *localBattleMech,
+        localWeapon
+    );
+
+    lastBattleResult.localHeatAdded =
+        localWeapon.heat;
     consumeWeaponAmmo(localActiveWeapon);
     applyWeaponHeat(*localBattleMech, localWeapon);
 
@@ -331,7 +378,15 @@ void resolveBattleTurn() {
         remoteBattleMech
             ->weapons[remoteWeaponSlot]
             .weapon;
-    
+    addWeaponHeat(
+        *remoteBattleMech,
+        remoteWeapon
+    );
+
+    lastBattleResult.remoteHeatAdded =
+        remoteWeapon.heat; 
+
+
     consumeWeaponAmmo(remoteActiveWeapon);
     applyWeaponHeat(*remoteBattleMech, remoteWeapon);
 
@@ -407,13 +462,35 @@ void resolveBattleTurn() {
       Serial.println(": MISS");
     }
   }
+  coolMech(*localBattleMech);
+  coolMech(*remoteBattleMech);
 
+  updateShutdownState(*localBattleMech);
+  updateShutdownState(*remoteBattleMech);
+
+  Serial.print("Local heat after cooling: ");
+  Serial.print(localBattleMech->currentHeat);
+  Serial.print("/");
+  Serial.println(
+      localBattleMech->chassis.heatCapacity
+  );
+
+  Serial.print("Remote heat after cooling: ");
+  Serial.print(remoteBattleMech->currentHeat);
+  Serial.print("/");
+  Serial.println(
+      remoteBattleMech->chassis.heatCapacity
+  );
   currentTurn.round++;
 
-  currentTurn.localWeaponSlot = -1;
-  currentTurn.remoteWeaponSlot = -1;
-  currentTurn.localSubmitted = false;
-  currentTurn.remoteSubmitted = false;
+currentTurn.localWeaponSlot = -1;
+currentTurn.remoteWeaponSlot = -1;
+
+currentTurn.localMovement = MOVE_HOLD;
+currentTurn.remoteMovement = MOVE_HOLD;
+
+currentTurn.localSubmitted = false;
+currentTurn.remoteSubmitted = false;
 }
 
 const BattleTurn &getBattleTurn() {

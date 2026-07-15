@@ -141,21 +141,22 @@ String encodeTurnPacket(int round, int weaponSlot) {
   return out;
 }
 
-bool decodeTurnPacket(const String &data, CpecTurnPacket &packet) {
-  if (!data.startsWith("T|")) {
-    return false;
-  }
+String encodeTurnPacket(
+    int round,
+    int weaponSlot,
+    int movement
+) {
+  String out = "T|";
 
-  int separator = data.indexOf('|', 2);
+  out += round;
+  out += "|";
 
-  if (separator < 0) {
-    return false;
-  }
+  out += weaponSlot;
+  out += "|";
 
-  packet.round = data.substring(2, separator).toInt();
-  packet.weaponSlot = data.substring(separator + 1).toInt();
+  out += movement;
 
-  return true;
+  return out;
 }
 
 String encodeReadyPacket(int nextRound) {
